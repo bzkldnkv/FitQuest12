@@ -1,568 +1,233 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
-<link rel="manifest" href='data:application/manifest+json,{"name":"trener.html","short_name":"trener.html","start_url":"./trener.html","display":"standalone","background_color":"%%BG%%","theme_color":"#1976d2","icons":[{"src":"data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><rect width=%27100%27 height=%27100%27 rx=%2720%27 fill=%27%231976d2%27/><text x=%2750%27 y=%2768%27 font-size=%2750%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27>FQ</text></svg>","sizes":"any","type":"image/svg+xml"}]}' />
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>FitQuest — Тренер</title><style>
-:root{ --bg:#f2f3f7; --panel:#fff; --text:#1c1e26; --mut:#8a8fa3; --acc:#2962ff; --line:#e6e8ef; --ok:#1a9e55; --red:#d94343; --bar:#2962ff; }
-[data-theme=dark]{ --bg:#0f1117; --panel:#1a1d28; --text:#e8eaf2; --mut:#8a8fa3; --acc:#4f83ff; --line:#262a38; --bar:#4f83ff; }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font:15px -apple-system,'Segoe UI',Roboto,sans-serif;}
-header{background:var(--panel);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-header b{font-size:17px;}
-#themeBtn{background:none;border:none;font-size:20px;cursor:pointer;}
-main{max-width:640px;margin:0 auto;padding:14px 14px 80px;}
-h2{font-size:20px;margin:14px 0 10px;}
-label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px;}
-input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-size:15px;margin-bottom:6px;}
-button{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;margin:4px 6px 4px 0;}
-button.danger{background:var(--red);}
-button.ghost{background:var(--line);color:var(--text);}
-.card{background:var(--panel);border-radius:14px;padding:14px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.panel{background:var(--panel);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.mut{color:var(--mut);font-size:13px;}
-.big{font-size:26px;font-weight:700;}
-.cards4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
-.cards4 .card{margin:0;}
-.row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);gap:8px;font-size:14px;cursor:pointer;}
-.row:last-child{border-bottom:none;}
-.row:hover{opacity:.85;}
-.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:var(--line);color:var(--mut);}
-.tag.red{background:#fdecea;color:#c0392b;}
-.tag.ok{background:#e6f6ec;color:#1a7f4b;}
-.delta.up{color:var(--ok);font-size:12px;} .delta.down{color:var(--red);font-size:12px;}
-.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0;}
-.bar>div{height:100%;background:var(--bar);border-radius:4px;transition:width .3s;}
-.filters{display:flex;gap:8px;margin:10px 0;align-items:center;}
-.filters input,.filters select{flex:1;margin:0;}
-.tabsm{display:flex;gap:6px;overflow-x:auto;margin:10px 0;padding:4px;background:var(--panel);border-radius:12px;}
-.tabsm span{padding:7px 14px;border-radius:9px;cursor:pointer;font-size:14px;white-space:nowrap;color:var(--mut);}
-.tabsm span.on{background:var(--acc);color:#fff;}
-.nav{position:fixed;bottom:0;left:0;right:0;background:var(--panel);display:flex;justify-content:space-around;padding:6px 0 10px;box-shadow:0 -2px 8px rgba(0,0,0,.08);z-index:10;}
-.nav span{font-size:11px;cursor:pointer;color:var(--mut);padding:4px 8px;border-radius:8px;text-align:center;}
-.nav span.on{color:var(--acc);font-weight:700;}
-.login{max-width:400px;margin:20px auto;}
-.chat .msgs{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
-.msg{background:var(--line);border-radius:12px;padding:8px 12px;max-width:85%;align-self:flex-start;font-size:14px;}
-.msg.me{background:var(--acc);color:#fff;align-self:flex-end;}
-.msg.me .mut{color:rgba(255,255,255,.7);}
-.chatrow{display:flex;gap:8px;margin-top:10px;}
-.chatrow input{flex:1;margin:0;}
-.chatrow button{margin:0;padding:10px 14px;}
-.switch{position:relative;display:inline-block;width:44px;height:24px;vertical-align:middle;}
-.switch input{opacity:0;width:0;height:0;}
-.switch i{position:absolute;inset:0;background:var(--line);border-radius:12px;transition:.2s;}
-.switch i:before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;left:3px;top:3px;background:#fff;transition:.2s;}
-.switch input:checked+i{background:var(--ok);}
-.switch input:checked+i:before{left:23px;}
-canvas{max-width:100%;}
-</style></head><body><header><b>trener.html</b><span id="hdrbtns"><button class="ghost" id="logoutBtn" onclick="logout()" style="display:none;padding:6px 12px;">Выйти</button><button id="themeBtn" onclick="cycleTheme()">🌗</button></span></header><main id="app"></main><div class="nav" id="trnav"></div><script>var NAVS=[["dash","📊","Дашборд"],["clients","👥","Клиенты"],["schedule","📅","Расписание"],["checks","✅","Проверки"],["finance","💰","Финансы"],["shop","🎁","Лавка"],["settings","⚙️","Настройки"]];function buildNav(){var n=document.getElementById("trnav");n.innerHTML=NAVS.map(function(x){return '<span data-t="'+x[0]+'" onclick="tab=\''+x[0]+'\';render()">'+x[1]+"<br>"+x[2]+"</span>";}).join("");}window.addEventListener("load",function(){applyTheme();buildNav();if(localStorage.getItem(SESSION_KEY)==="trainer")user="trainer";render();});</script><script>
-/* ===== FitQuest core ===== */
-window.__fq_error = null;
-window.addEventListener('error', function(e){
-  try{
-    var d = document.getElementById('errbox');
-    if(!d){ d = document.createElement('div'); d.id='errbox';
-      d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:#fff;font:12px monospace;padding:10px;white-space:pre-wrap;max-height:40vh;overflow:auto;';
-      (document.body||document.documentElement).appendChild(d);}
-    d.textContent += 'ERROR: '+e.message+' @ line '+e.lineno+'\n';
-  }catch(_){}
-});
-
-var FIREBASE_CONFIG = { apiKey:"", authDomain:"", databaseURL:"", projectId:"", appId:"" };
-var CFG_KEY='fq_cfg', DATA_KEY='fq_data', SESSION_KEY='fq_session', THEME_KEY='fq_theme';
-
-var DEF_CFG = {
-  appName:'FitQuest', inviteCode:'FIT2026',
-  discountHalf:10, discountFull:15, blockLen:42,
-  xpTrain:50, xpFood:30, xpHabit:20, streakBonus:20, streakEvery:3,
-  warnDays:5,
-  shop:[{id:'s1',name:'Скидка 5%',cost:200},{id:'s2',name:'Фитнес-браслет',cost:1500},{id:'s3',name:'Бесплатная персоналка',cost:800}],
-  tariffs:[{id:'t1',name:'Индивидуальная',price:2500},{id:'t2',name:'Онлайн',price:1800}]
-};
-
-function load(k,def){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
-function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
-var CFG = Object.assign({}, DEF_CFG, load(CFG_KEY,{}));
-var DB = load(DATA_KEY,null);
-if(!DB){
-  DB = { users:{ trainer:{role:'trainer',pass:'1234'} }, sessions:[], reports:[], chats:[], events:[], payments:[], purchases:[], measures:[], nextId:1 };
-  seedDemo();
-}
-function uid(){ return 'x'+(DB.nextId++)+'_'+Date.now().toString(36); }
-function saveDB(){ save(DATA_KEY,DB); }
-
-function seedDemo(){
-  DB.users['anna']={role:'client',pass:'1234',name:'Анна Смирнова',phone:'+7 900 111-22-33',code:'FIT2026',joined:Date.now()-86400000*30,notes:'',tags:['похудение'],subUntil:Date.now()+86400000*20,subLeft:12,frozen:false,blockLen:21,xp:420,streak:2,lastActive:Date.now()-86400000*2,blockDone:5,discount:'—'};
-  DB.users['ivan']={role:'client',pass:'1234',name:'Иван Петров',phone:'+7 900 444-55-66',code:'FIT2026',joined:Date.now()-86400000*10,notes:'',tags:['набор массы'],subUntil:Date.now()+86400000*40,subLeft:25,frozen:false,blockLen:42,xp:150,streak:0,lastActive:Date.now()-86400000*7,blockDone:2,discount:'—'};
-  DB.users.anna.quests=[
-    {id:'q1',name:'Тренировка в зале',desc:'Силовая, 60 минут',type:'train',xp:50,on:true},
-    {id:'q2',name:'Норма белка',desc:'1,6 г на кг веса',type:'food',xp:30,on:true},
-    {id:'q3',name:'10 000 шагов',desc:'Ежедневно',type:'habit',xp:20,on:true}];
-  DB.users.ivan.quests=[
-    {id:'q4',name:'Тренировка верх тела',desc:'Жим, тяга, 60 минут',type:'train',xp:50,on:true},
-    {id:'q5',name:'Профицит калорий',desc:'+300 ккал к норме',type:'food',xp:30,on:true}];
-  var t=Date.now();
-  DB.events.push({id:uid(),title:'Пилатес и укрепление спины',type:'group',when:t+86400000,cap:8,price:900,signed:['anna','ivan']});
-  DB.events.push({id:uid(),title:'Персоналка: Анна',type:'pt',when:t+86400000*2,cap:1,price:2500,signed:['anna'],paid:{anna:true}});
-  DB.reports.push({id:uid(),user:'anna',quest:'Тренировка в зале',text:'Сделала 3х15, тяжело но норм',ts:t-3600000,status:'pending'});
-  DB.payments.push({id:uid(),user:'anna',amount:2500,tariff:'Индивидуальная',ts:t-86400000*3,event:null});
-  DB.measures.push({id:uid(),user:'anna',weight:64.5,waist:74,ts:t-86400000*20});
-  DB.measures.push({id:uid(),user:'anna',weight:63.1,waist:72,ts:t-86400000*5});
-  saveDB();
-}
-
-/* ===== theme ===== */
-function applyTheme(){
-  var m=localStorage.getItem(THEME_KEY)||'auto';
-  var dark;
-  if(m==='dark') dark=true; else if(m==='light') dark=false; else { var h=new Date().getHours(); dark=(h<8||h>=20); }
-  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-  var b=document.getElementById('themeBtn');
-  if(b) b.textContent = m==='auto' ? '🌗' : (dark?'🌙':'☀️');
-}
-function cycleTheme(){
-  var m=localStorage.getItem(THEME_KEY)||'auto';
-  m = m==='light'?'dark':(m==='dark'?'auto':'light');
-  localStorage.setItem(THEME_KEY,m); applyTheme();
-  toast('Оформление: '+(m==='light'?'светлое':m==='dark'?'тёмное':'авто'));
-}
-
-/* ===== ui helpers ===== */
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-function fmtMoney(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽'; }
-function fmtDate(ts){ var d=new Date(ts); return d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'}); }
-function fmtDT(ts){ var d=new Date(ts); return d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
-function toast(msg){
-  var t=document.createElement('div'); t.textContent=msg;
-  t.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:9999;opacity:0;transition:opacity .2s;';
-  document.body.appendChild(t); requestAnimationFrame(function(){t.style.opacity=1;});
-  setTimeout(function(){ t.style.opacity=0; setTimeout(function(){t.remove();},300); },2200);
-}
-function daysBetween(a,b){ return Math.floor((b-a)/86400000); }
-
-/* ===== TRAINER APP ===== */
-var user=null, tab='dash', curClient=null, curSub='profile', finMonth=(new Date()).getMonth(), finYear=(new Date()).getFullYear(), finFilter='all';
-
-function login(){
-  var u=document.getElementById('luser').value.trim(), p=document.getElementById('lpass').value;
-  if(u==='trainer' && p==='1234'){ user='trainer'; save(SESSION_KEY,'trainer'); render(); }
-  else toast('Неверный логин или пароль');
-}
-function logout(){ user=null; save(SESSION_KEY,null); render(); }
-
-function clients(){ return Object.keys(DB.users).filter(function(k){return DB.users[k].role==='client';}).map(function(k){ return Object.assign({key:k},DB.users[k]); }); }
-function clientName(k){ return (DB.users[k]&&DB.users[k].name)||k; }
-
-/* --- dashboard --- */
-function dashboard(){
-  var cs=clients(), now=Date.now();
-  var pending=DB.reports.filter(function(r){return r.status==='pending';}).length;
-  var rev=monthRevenue(finYear,finMonth);
-  var warn=cs.filter(function(c){
-    if(c.frozen) return false;
-    return daysBetween(c.lastActive||0,now) >= CFG.warnDays;
-  });
-  var expiring=cs.filter(function(c){ return !c.frozen && (c.subUntil||0)-now < 86400000*7 && (c.subUntil||0)>now; });
-  var top=cs.slice().sort(function(a,b){return (b.xp||0)-(a.xp||0);}).slice(0,5);
-  var h='<h2>Дашборд</h2><div class="cards4">';
-  h+='<div class="card"><div class="mut">Клиенты</div><div class="big">'+cs.length+'</div></div>';
-  h+='<div class="card"><div class="mut">Ждут проверки</div><div class="big">'+pending+'</div></div>';
-  h+='<div class="card"><div class="mut">Выручка за месяц</div><div class="big">'+fmtMoney(rev.sum)+'</div><div class="delta '+(rev.delta>=0?'up':'down')+'">'+(rev.delta>=0?'▲ +':'▼ ')+rev.delta+'% чем 30 дней назад</div></div>';
-  h+='<div class="card"><div class="mut">Ждёт оплаты</div><div class="big">'+fmtMoney(unpaidSum())+'</div></div></div>';
-  h+='<div class="panel"><b>Риск отвала</b>'+(warn.length?'':' — все активны 👍');
-  warn.forEach(function(c){ h+='<div class="row" onclick="openClient(\''+c.key+'\')"><span>'+esc(c.name)+'</span><span class="tag red">'+daysBetween(c.lastActive||0,now)+' дн. тишины</span></div>'; });
-  h+='</div>';
-  if(expiring.length){ h+='<div class="panel"><b>Абонемент истекает</b>'; expiring.forEach(function(c){ h+='<div class="row" onclick="openClient(\''+c.key+'\')"><span>'+esc(c.name)+'</span><span>'+fmtDate(c.subUntil)+'</span></div>'; }); h+='</div>'; }
-  h+='<div class="panel"><b>Топ по XP</b>'; top.forEach(function(c){ h+='<div class="row"><span>'+esc(c.name)+'</span><span>'+(c.xp||0)+' XP</span></div>'; }); h+='</div>';
-  return h;
-}
-
-/* --- clients --- */
-function clientsList(){
-  var q=(document.getElementById('csearch')?document.getElementById('csearch').value.toLowerCase():'');
-  var tf=(document.getElementById('ctag')?document.getElementById('ctag').value:'');
-  var cs=clients().filter(function(c){
-    var okq=!q || c.name.toLowerCase().indexOf(q)>=0 || (c.phone||'').indexOf(q)>=0;
-    var okt=!tf || (c.tags||[]).indexOf(tf)>=0;
-    return okq&&okt;
-  });
-  var tags=[]; cs.forEach(function(c){ (c.tags||[]).forEach(function(t){ if(tags.indexOf(t)<0)tags.push(t); }); });
-  var h='<h2>Клиенты</h2><div class="filters"><input id="csearch" placeholder="Имя или телефон" value="'+esc(q)+'" oninput="rerender()">';
-  h+='<select id="ctag" onchange="rerender()"><option value="">Все теги</option>'+tags.map(function(t){return '<option '+(tf===t?'selected':'')+'>'+esc(t)+'</option>';}).join('')+'</select></div>';
-  cs.forEach(function(c){
-    var badge = c.frozen?'<span class="tag">заморозка</span>':((daysBetween(c.lastActive||0,Date.now())>=CFG.warnDays)?'<span class="tag red">риск отвала</span>':'');
-    h+='<div class="card" onclick="openClient(\''+c.key+'\')"><b>'+esc(c.name)+'</b> '+badge+'<div class="mut">'+esc(c.phone||'')+' · '+(c.xp||0)+' XP · блок '+(c.blockDone||0)+'/'+(c.blockLen||CFG.blockLen)+'</div></div>';
-  });
-  h+='<button onclick="newClient()">+ Добавить клиента</button>';
-  return h;
-}
-function openClient(k){ curClient=k; curSub='profile'; tab='client'; render(); }
-function newClient(){
-  var n=prompt('Имя клиента:'); if(!n)return;
-  var ph=prompt('Телефон:','')||'';
-  var key='c'+Date.now().toString(36);
-  DB.users[key]={role:'client',pass:'1234',name:n,phone:ph,code:CFG.inviteCode,joined:Date.now(),notes:'',tags:[],subUntil:Date.now()+86400000*30,subLeft:16,frozen:false,blockLen:CFG.blockLen,xp:0,streak:0,lastActive:Date.now(),blockDone:0,discount:'—',quests:[]};
-  saveDB(); openClient(key);
-}
-function clientCard(){
-  var c=DB.users[curClient]; if(!c) return '<p>Клиент не найден</p>';
-  var h='<button class="back" onclick="tab=\'clients\';render()">← Клиенты</button>';
-  h+='<h2>'+esc(c.name)+'</h2>';
-  h+='<div class="tabsm">'+['profile','quests','measures','payments','chat'].map(function(s){
-    return '<span class="'+(curSub===s?'on':'')+'" onclick="curSub=\''+s+'\';render()">'+({profile:'Профиль',quests:'Квесты',measures:'Замеры',payments:'Оплаты',chat:'Чат'})[s]+'</span>';
-  }).join('')+'</div>';
-  if(curSub==='profile') h+=subProfile(c);
-  if(curSub==='quests') h+=subQuests(c);
-  if(curSub==='measures') h+=subMeasures(c);
-  if(curSub==='payments') h+=subPayments(c);
-  if(curSub==='chat') h+=chatBlock(curClient,'trainer');
-  return h;
-}
-function subProfile(c){
-  var link=location.href.split('?')[0].replace('trener.html','klient.html')+'?code='+encodeURIComponent(CFG.inviteCode);
-  var h='<div class="panel"><b>Профиль</b>';
-  h+='<div class="row"><span>Телефон</span><span>'+esc(c.phone||'—')+'</span></div>';
-  h+='<div class="row"><span>Логин</span><span>'+esc(curClient)+' / пароль 1234</span></div>';
-  h+='</div>';
-  h+='<div class="panel"><b>Ссылка-приглашение</b><div class="mut">'+esc(link)+'</div><button onclick="copyLink()">Скопировать</button></div>';
-  h+='<div class="panel"><b>Абонемент</b>';
-  h+='<div class="row"><span>Действует до</span><span>'+fmtDate(c.subUntil||Date.now())+'</span></div>';
-  h+='<div class="row"><span>Осталось посещений</span><span>'+(c.subLeft||0)+'</span></div>';
-  h+='<button onclick="extendSub(\''+curClient+'\')">+30 дней</button> ';
-  h+='<button onclick="toggleFreeze(\''+curClient+'\')">'+(c.frozen?'Разморозить':'Заморозить')+'</button>';
-  h+='</div>';
-  h+='<div class="panel"><b>Заметки тренера (только для вас)</b><textarea id="notes_'+curClient+'" rows="3">'+esc(c.notes||'')+'</textarea><button onclick="saveNotes(\''+curClient+'\')">Сохранить заметки</button></div>';
-  h+='<div class="panel"><b>Теги</b><input id="tags_'+curClient+'" value="'+esc((c.tags||[]).join(', '))+'"><button onclick="saveTags(\''+curClient+'\')">Сохранить теги</button></div>';
-  h+='<div class="panel"><b>Прогресс блока</b><div class="row"><span>Закрыто квестов</span><span>'+(c.blockDone||0)+' из '+(c.blockLen||CFG.blockLen)+'</span></div><div class="bar"><div style="width:'+Math.min(100,100*(c.blockDone||0)/(c.blockLen||CFG.blockLen))+'%"></div></div>';
-  h+='<div class="row"><span>Скидка</span><span>'+esc(c.discount||'—')+'</span></div>';
-  h+='<button onclick="resetBlock(\''+curClient+'\')">Сбросить блок</button></div>';
-  return h;
-}
-function copyLink(){
-  var link=location.href.split('?')[0].replace('trener.html','klient.html')+'?code='+encodeURIComponent(CFG.inviteCode);
-  if(navigator.clipboard) navigator.clipboard.writeText(link).then(function(){toast('Ссылка скопирована');});
-  else toast(link);
-}
-function extendSub(k){ DB.users[k].subUntil=(DB.users[k].subUntil||Date.now())+86400000*30; saveDB(); render(); }
-function toggleFreeze(k){ DB.users[k].frozen=!DB.users[k].frozen; saveDB(); render(); }
-function saveNotes(k){ DB.users[k].notes=document.getElementById('notes_'+k).value; saveDB(); toast('Сохранено'); }
-function saveTags(k){ DB.users[k].tags=document.getElementById('tags_'+k).value.split(',').map(function(s){return s.trim();}).filter(Boolean); saveDB(); render(); }
-function resetBlock(k){ DB.users[k].blockDone=0; DB.users[k].discount='—'; saveDB(); render(); }
-
-function subQuests(c){
-  var h='<div class="panel"><b>Квесты клиента</b>';
-  (c.quests||[]).forEach(function(q){
-    h+='<div class="card"><b>'+esc(q.name)+'</b> <span class="tag">'+({train:'тренировка',food:'питание',habit:'привычка'})[q.type]+'</span> <span class="tag">'+q.xp+' XP</span>'+(q.on?'':' <span class="tag red">выкл</span>');
-    h+='<div class="mut">'+esc(q.desc||'')+'</div>';
-    h+='<button onclick="toggleQuest(\''+curClient+'\',\''+q.id+'\')">'+(q.on?'Выключить':'Включить')+'</button> ';
-    h+='<button onclick="editQuest(\''+curClient+'\',\''+q.id+'\')">Изменить</button> ';
-    h+='<button class="danger" onclick="delQuest(\''+curClient+'\',\''+q.id+'\')">Удалить</button></div>';
-  });
-  h+='<button onclick="addQuest(\''+curClient+'\')">+ Добавить квест</button></div>';
-  h+='<div class="panel"><b>Шаблоны программ</b>';
-  var tpl=load('fq_tpl',{});
-  Object.keys(tpl).forEach(function(n){ h+='<div class="row"><span>'+esc(n)+' ('+tpl[n].length+')</span><span><button onclick="applyTpl(\''+curClient+'\',\''+esc(n)+'\')">Применить</button> <button class="danger" onclick="delTpl(\''+esc(n)+'\')">Удалить</button></span></div>'; });
-  h+='<button onclick="saveTpl(\''+curClient+'\')">Сохранить квесты как шаблон</button></div>';
-  return h;
-}
-function askQuest(existing){
-  var name=prompt('Название квеста:', existing?existing.name:''); if(!name)return null;
-  var desc=prompt('Описание:', existing?existing.desc:'')||'';
-  var type=prompt('Тип: тренировка / питание / привычка:', existing?existing.type:'тренировка')||'train';
-  type=type.toLowerCase().indexOf('пит')===0?'food':(type.toLowerCase().indexOf('при')===0?'habit':'train');
-  var xp=parseInt(prompt('XP за квест:', existing?existing.xp:CFG[type==='train'?'xpTrain':type==='food'?'xpFood':'xpHabit']))||10;
-  return {name:name,desc:desc,type:type,xp:xp};
-}
-function addQuest(k){ var q=askQuest(); if(!q)return; q.id='q'+Date.now().toString(36); q.on=true; DB.users[k].quests=DB.users[k].quests||[]; DB.users[k].quests.push(q); saveDB(); render(); }
-function editQuest(k,qid){ var c=DB.users[k]; var q=(c.quests||[]).filter(function(x){return x.id===qid;})[0]; if(!q)return; var nq=askQuest(q); if(!nq)return; Object.assign(q,nq); saveDB(); render(); }
-function delQuest(k,qid){ DB.users[k].quests=(DB.users[k].quests||[]).filter(function(x){return x.id!==qid;}); saveDB(); render(); }
-function toggleQuest(k,qid){ var q=DB.users[k].quests.filter(function(x){return x.id===qid;})[0]; q.on=!q.on; saveDB(); render(); }
-function saveTpl(k){ var n=prompt('Название шаблона:'); if(!n)return; var t=load('fq_tpl',{}); t[n]=JSON.parse(JSON.stringify(DB.users[k].quests||[])); save('fq_tpl',t); render(); }
-function delTpl(n){ var t=load('fq_tpl',{}); delete t[decodeURIComponent(n)]; save('fq_tpl',t); render(); }
-function applyTpl(k,n){ var t=load('fq_tpl',{}); var arr=t[decodeURIComponent(n)]; if(!arr)return; DB.users[k].quests=JSON.parse(JSON.stringify(arr)); saveDB(); render(); }
-
-function subMeasures(c){
-  var ms=(DB.measures||[]).filter(function(m){return m.user===curClient;}).sort(function(a,b){return a.ts-b.ts;});
-  var h='<div class="panel"><b>Замеры</b>';
-  ms.forEach(function(m){ h+='<div class="row"><span>'+fmtDate(m.ts)+'</span><span>'+m.weight+' кг · талия '+m.waist+' см <button class="danger" onclick="delMeasure(\''+m.id+'\')">✕</button></span></div>'; });
-  h+='</div>';
-  if(ms.length>1){
-    h+='<div class="panel"><b>График веса</b><canvas id="wchart" width="320" height="160"></canvas></div>';
-  }
-  h+='<div class="panel"><b>Новый замер</b><label>Вес (кг)</label><input id="mw" type="number" step="0.1"><label>Талия (см)</label><input id="mwa" type="number" step="0.5"><button onclick="addMeasure()">Добавить</button></div>';
-  return h;
-}
-function addMeasure(){
-  var w=parseFloat(document.getElementById('mw').value), wa=parseFloat(document.getElementById('mwa').value);
-  if(!w) { toast('Введите вес'); return; }
-  DB.measures.push({id:uid(),user:curClient,weight:w,waist:wa||0,ts:Date.now()}); saveDB(); render();
-}
-function delMeasure(id){ DB.measures=DB.measures.filter(function(m){return m.id!==id;}); saveDB(); render(); }
-function drawWeightChart(){
-  var cv=document.getElementById('wchart'); if(!cv) return;
-  var ms=(DB.measures||[]).filter(function(m){return m.user===curClient;}).sort(function(a,b){return a.ts-b.ts;});
-  var ctx=cv.getContext('2d'), W=cv.width, H=cv.height, pad=20;
-  var ws=ms.map(function(m){return m.weight;});
-  var mn=Math.min.apply(null,ws)-1, mx=Math.max.apply(null,ws)+1;
-  ctx.clearRect(0,0,W,H);
-  var dark=document.documentElement.getAttribute('data-theme')==='dark';
-  ctx.strokeStyle=dark?'#556':'#ccc'; ctx.fillStyle=dark?'#ccc':'#333';
-  ws.forEach(function(w,i){
-    var x=pad+(W-2*pad)*(ms.length===1?0.5:i/(ws.length-1));
-    var y=H-pad-(H-2*pad)*((w-mn)/(mx-mn));
-    if(i>0){ ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(x,y); ctx.stroke(); }
-    ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill();
-    var px=x,py=y;
-  });
-  ctx.fillText(String(Math.round(mx-1)),4,14); ctx.fillText(String(Math.round(mn+1)),4,H-6);
-}
-function subPayments(c){
-  var pays=(DB.payments||[]).filter(function(p){return p.user===curClient;}).sort(function(a,b){return b.ts-a.ts;});
-  var h='<div class="panel"><b>Оплаты клиента</b>';
-  pays.forEach(function(p){ h+='<div class="row"><span>'+fmtDate(p.ts)+' · '+esc(p.tariff||'оплата')+'</span><span>'+fmtMoney(p.amount)+' <button class="danger" onclick="delPayment(\''+p.id+'\')">✕</button></span></div>'; });
-  h+='<label>Новая оплата</label><select id="ptar">'+CFG.tariffs.map(function(t){return '<option value="'+t.id+'">'+esc(t.name)+' — '+t.price+' ₽</option>';}).join('')+'<option value="custom">Своя сумма</option></select>';
-  h+='<input id="psum" type="number" placeholder="Сумма ₽"><button onclick="addPayment(\''+curClient+'\')">Записать оплату</button></div>';
-  return h;
-}
-function addPayment(k){
-  var sel=document.getElementById('ptar').value, sum=parseFloat(document.getElementById('psum').value);
-  var tariff='Оплата';
-  if(sel!=='custom'){ var t=CFG.tariffs.filter(function(x){return x.id===sel;})[0]; tariff=t.name; if(!sum) sum=t.price; }
-  if(!sum){ toast('Введите сумму'); return; }
-  DB.payments.push({id:uid(),user:k,amount:sum,tariff:tariff,ts:Date.now(),event:null}); saveDB(); render();
-}
-function delPayment(id){ DB.payments=DB.payments.filter(function(p){return p.id!==id;}); saveDB(); render(); }
-
-/* --- chat --- */
-function chatBlock(peer,role){
-  var me = role==='trainer'?'trainer':USER_KEY;
-  var msgs=(DB.chats||[]).filter(function(m){ return (m.from===me&&m.to===peer)||(m.from===peer&&m.to===me); }).sort(function(a,b){return a.ts-b.ts;});
-  var h='<div class="panel chat"><div class="msgs">';
-  msgs.forEach(function(m){ h+='<div class="msg '+(m.from===me?'me':'')+'"><b>'+(m.from===me?'Вы':esc(clientName(m.from)))+'</b> '+esc(m.text)+'<div class="mut">'+fmtDT(m.ts)+'</div></div>'; });
-  if(!msgs.length) h+='<div class="mut">Сообщений пока нет</div>';
-  h+='</div><div class="chatrow"><input id="chat_'+peer+'" placeholder="Сообщение…" onkeydown="if(event.key===\'Enter\')sendChat(\''+peer+'\')"><button onclick="sendChat(\''+peer+'\')">➤</button></div></div>';
-  return h;
-}
-function sendChat(peer){
-  var inp=document.getElementById('chat_'+peer); var t=inp.value.trim(); if(!t)return;
-  DB.chats=DB.chats||[];
-  DB.chats.push({id:uid(),from:'trainer',to:peer,text:t,ts:Date.now()});
-  saveDB(); inp.value=''; render();
-}
-
-/* --- schedule --- */
-function schedule(){
-  var evs=DB.events.slice().sort(function(a,b){return a.when-b.when;});
-  var h='<h2>Расписание</h2><button onclick="newEvent()">+ Создать занятие</button>';
-  evs.forEach(function(e){
-    var d=new Date(e.when);
-    h+='<div class="card"><b>'+esc(e.title)+'</b> <span class="tag">'+(e.type==='pt'?'персональная':'групповая')+'</span>';
-    h+='<div class="mut">'+d.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+' · '+fmtMoney(e.price||0)+(e.tariff?' · '+esc(e.tariff):'')+'</div>';
-    h+='<div class="mut">Записались: '+((e.signed||[]).map(clientName).join(', ')||'—')+' ('+((e.signed||[]).length)+'/'+(e.cap||1)+')</div>';
-    if(e.type==='pt'||(e.signed||[]).length){
-      (e.signed||[]).forEach(function(u){
-        var paid=(e.paid&&e.paid[u])||false;
-        h+='<div class="row"><span>'+esc(clientName(u))+'</span><span><label class="switch"><input type="checkbox" '+(paid?'checked':'')+' onchange="togglePaid(\''+e.id+'\',\''+u+'\',this.checked)"><i></i></label> '+(paid?fmtMoney(e.price||0):'ждёт оплаты')+'</span></div>';
-      });
-    }
-    h+='<button class="danger" onclick="delEvent(\''+e.id+'\')">Удалить занятие</button></div>';
-  });
-  if(!evs.length) h+='<p class="mut">Занятий пока нет</p>';
-  return h;
-}
-function newEvent(){
-  var title=prompt('Название занятия:'); if(!title)return;
-  var type=confirm('Это персональная тренировка?\n\nOK — персональная, Отмена — групповая')?'pt':'group';
-  var ds=prompt('Дата и время (ГГГГ-ММ-ДД ЧЧ:ММ):','2026-11-28 18:00'); if(!ds)return;
-  var when=new Date(ds.replace(' ','T')).getTime(); if(isNaN(when)){toast('Неверная дата');return;}
-  var cap=parseInt(prompt('Сколько мест:','1'))||1;
-  var defPrice = type==='pt'?(CFG.tariffs[0]?CFG.tariffs[0].price:1000):900;
-  var price=parseFloat(prompt('Цена, ₽:',defPrice))||0;
-  DB.events.push({id:uid(),title:title,type:type,when:when,cap:cap,price:price,signed:[],paid:{}});
-  saveDB(); render();
-}
-function delEvent(id){ DB.events=DB.events.filter(function(e){return e.id!==id;}); saveDB(); render(); }
-function togglePaid(eid,uname,val){
-  var e=DB.events.filter(function(x){return x.id===eid;})[0]; if(!e)return;
-  e.paid=e.paid||{};
-  if(val){ e.paid[uname]=true;
-    var exists=DB.payments.some(function(p){return p.event===eid&&p.user===uname;});
-    if(!exists) DB.payments.push({id:uid(),user:uname,amount:e.price||0,tariff:e.tariff||e.title,ts:Date.now(),event:eid});
-  } else { delete e.paid[uname];
-    DB.payments=DB.payments.filter(function(p){return !(p.event===eid&&p.user===uname);});
-  }
-  saveDB(); render();
-}
-
-/* --- checks --- */
-function checks(){
-  var pend=DB.reports.filter(function(r){return r.status==='pending';}).sort(function(a,b){return b.ts-a.ts;});
-  var done=DB.reports.filter(function(r){return r.status!=='pending';}).sort(function(a,b){return b.ts-a.ts;}).slice(0,15);
-  var h='<h2>Проверки</h2>';
-  pend.forEach(function(r){
-    h+='<div class="card"><b>'+esc(clientName(r.user))+'</b><div class="mut">'+esc(r.quest)+' · '+fmtDT(r.ts)+'</div>';
-    h+='<div>'+esc(r.text||'')+'</div>'+(r.photo?'<div class="mut">📷 фото приложено</div>':'');
-    h+='<button onclick="approve(\''+r.id+'\')">✓ Засчитать</button> <button class="danger" onclick="reject(\''+r.id+'\')">✕ Отклонить</button></div>';
-  });
-  if(!pend.length) h+='<p class="mut">Очередь пуста</p>';
-  h+='<div class="panel"><b>История решений</b>';
-  done.forEach(function(r){ h+='<div class="row"><span>'+esc(clientName(r.user))+' · '+esc(r.quest)+'</span><span class="tag '+(r.status==='approved'?'ok':'red')+'">'+(r.status==='approved'?'засчитан':'отклонён')+'</span></div>'; });
-  h+='</div>';
-  return h;
-}
-function approve(id){
-  var r=DB.reports.filter(function(x){return x.id===id;})[0]; if(!r)return;
-  r.status='approved';
-  var u=DB.users[r.user]; if(u){
-    u.xp=(u.xp||0)+(r.xp||0);
-    u.blockDone=(u.blockDone||0)+1;
-    u.lastActive=Date.now();
-    var bl=u.blockLen||CFG.blockLen;
-    if(u.blockDone>=bl){ u.discount='скидка '+CFG.discountFull+'%'; u.blockDone=0; toast('Блок закрыт! Скидка '+CFG.discountFull+'%'); }
-    else if(u.blockDone>=Math.floor(bl/2)){ u.discount='скидка '+CFG.discountHalf+'%'; }
-    u.streak=(u.streak||0)+1;
-    if(u.streak%CFG.streakEvery===0){ u.xp+=CFG.streakBonus; toast('Бонус за серию: +'+CFG.streakBonus+' XP'); }
-  }
-  saveDB(); render();
-}
-function reject(id){ var r=DB.reports.filter(function(x){return x.id===id;})[0]; if(r){ r.status='rejected'; saveDB(); render(); } }
-
-/* --- finance --- */
-function monthRevenue(y,m){
-  var s=0;
-  DB.payments.forEach(function(p){ var d=new Date(p.ts); if(d.getFullYear()===y&&d.getMonth()===m) s+=p.amount||0; });
-  var pd=new Date(y,m-1,1); var ps=0;
-  if(m===0) pd=new Date(y-1,11,1);
-  DB.payments.forEach(function(p){ var d=new Date(p.ts); if(d.getFullYear()===pd.getFullYear()&&d.getMonth()===pd.getMonth()) ps+=p.amount||0; });
-  var delta=ps>0?Math.round((s-ps)/ps*100):(s>0?100:0);
-  return {sum:s,delta:delta};
-}
-function unpaidSum(){
-  var s=0;
-  DB.events.forEach(function(e){
-    (e.signed||[]).forEach(function(u){ if(!(e.paid&&e.paid[u])) s+=e.price||0; });
-  });
-  return s;
-}
-function unpaidList(){
-  var arr=[];
-  DB.events.forEach(function(e){ (e.signed||[]).forEach(function(u){ if(!(e.paid&&e.paid[u])) arr.push({u:u,e:e}); }); });
-  return arr;
-}
-function finance(){
-  var rev=monthRevenue(finYear,finMonth);
-  var mn=new Date(finYear,finMonth,1);
-  var h='<h2>Финансы</h2>';
-  h+='<div class="filters"><button onclick="shiftMonth(-1)">←</button><b>'+mn.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})+'</b><button onclick="shiftMonth(1)">→</button></div>';
-  h+='<div class="cards4"><div class="card"><div class="mut">Выручка</div><div class="big">'+fmtMoney(rev.sum)+'</div><div class="delta '+(rev.delta>=0?'up':'down')+'">'+(rev.delta>=0?'▲ +':'▼ ')+rev.delta+'%</div></div>';
-  h+='<div class="card"><div class="mut">Ждёт оплаты</div><div class="big">'+fmtMoney(unpaidSum())+'</div></div>';
-  h+='<div class="card"><div class="mut">Оплат</div><div class="big">'+DB.payments.filter(function(p){var d=new Date(p.ts);return d.getFullYear()===finYear&&d.getMonth()===finMonth;}).length+'</div></div></div>';
-  var mp=[['all','Все'],['paid','Оплачено'],['unpaid','Ждёт оплаты']];
-  h+='<div class="tabsm">'+mp.map(function(x){return '<span class="'+(finFilter===x[0]?'on':'')+'" onclick="finFilter=\''+x[0]+'\';render()">'+x[1]+'</span>';}).join('')+'</div>';
-  if(finFilter==='unpaid'||finFilter==='all'){
-    unpaidList().forEach(function(x){
-      h+='<div class="row card"><span>'+esc(clientName(x.u))+' · '+esc(x.e.title)+' · '+fmtDate(x.e.when)+'</span><span class="tag red">'+fmtMoney(x.e.price||0)+'</span></div>';
-    });
-  }
-  if(finFilter==='paid'||finFilter==='all'){
-    DB.payments.filter(function(p){var d=new Date(p.ts);return d.getFullYear()===finYear&&d.getMonth()===finMonth;}).sort(function(a,b){return b.ts-a.ts;}).forEach(function(p){
-      h+='<div class="row card"><span>'+esc(clientName(p.user))+' · '+esc(p.tariff||'оплата')+' · '+fmtDate(p.ts)+'</span><span>'+fmtMoney(p.amount)+'</span></div>';
-    });
-  }
-  var per={};
-  DB.payments.forEach(function(p){ var d=new Date(p.ts); if(d.getFullYear()===finYear&&d.getMonth()===finMonth){ per[p.user]=(per[p.user]||0)+(p.amount||0); } });
-  var keys=Object.keys(per).sort(function(a,b){return per[b]-per[a];});
-  if(keys.length){
-    var tot=0; keys.forEach(function(k){tot+=per[k];});
-    h+='<div class="panel"><b>Кто приносит деньги</b>';
-    keys.forEach(function(k){
-      var pct=Math.round(per[k]/tot*100);
-      h+='<div class="row"><span>'+esc(clientName(k))+' — '+fmtMoney(per[k])+' ('+pct+'%)</span></div><div class="bar"><div style="width:'+pct+'%"></div></div>';
-    });
-    h+='</div>';
-  }
-  h+='<div class="panel"><b>Тарифы</b>';
-  CFG.tariffs.forEach(function(t){
-    h+='<div class="row"><span>'+esc(t.name)+'</span><span>'+fmtMoney(t.price)+' <button onclick="editTariff(\''+t.id+'\')">Изменить</button> <button class="danger" onclick="delTariff(\''+t.id+'\')">✕</button></span></div>';
-  });
-  h+='<button onclick="addTariff()">+ Добавить тариф</button></div>';
-  return h;
-}
-function shiftMonth(d){ finMonth+=d; if(finMonth<0){finMonth=11;finYear--;} if(finMonth>11){finMonth=0;finYear++;} render(); }
-function addTariff(){ var n=prompt('Название тарифа:'); if(!n)return; var p=parseFloat(prompt('Цена, ₽:','1000'))||0; CFG.tariffs.push({id:uid(),name:n,price:p}); save(CFG_KEY,CFG); render(); }
-function editTariff(id){ var t=CFG.tariffs.filter(function(x){return x.id===id;})[0]; if(!t)return; var n=prompt('Название:',t.name)||t.name; var p=parseFloat(prompt('Цена, ₽:',t.price))||t.price; Object.assign(t,{name:n,price:p}); save(CFG_KEY,CFG); render(); }
-function delTariff(id){ CFG.tariffs=CFG.tariffs.filter(function(x){return x.id!==id;}); save(CFG_KEY,CFG); render(); }
-
-/* --- shop --- */
-function shop(){
-  var h='<h2>Лавка наград</h2><div class="panel">';
-  CFG.shop.forEach(function(s){
-    var bought=(DB.purchases||[]).filter(function(p){return p.shop===s.id;}).length;
-    h+='<div class="row"><span>'+esc(s.name)+' <span class="mut">куплено: '+bought+'</span></span><span>'+s.cost+' XP <button onclick="editReward(\''+s.id+'\')">Изменить</button> <button class="danger" onclick="delReward(\''+s.id+'\')">✕</button></span></div>';
-  });
-  h+='<button onclick="addReward()">+ Добавить награду</button></div>';
-  return h;
-}
-function addReward(){ var n=prompt('Название награды:'); if(!n)return; var c=parseInt(prompt('Цена в XP:','200'))||100; CFG.shop.push({id:uid(),name:n,cost:c}); save(CFG_KEY,CFG); render(); }
-function editReward(id){ var s=CFG.shop.filter(function(x){return x.id===id;})[0]; if(!s)return; var n=prompt('Название:',s.name)||s.name; var c=parseInt(prompt('Цена в XP:',s.cost))||s.cost; Object.assign(s,{name:n,cost:c}); save(CFG_KEY,CFG); render(); }
-function delReward(id){ CFG.shop=CFG.shop.filter(function(x){return x.id!==id;}); save(CFG_KEY,CFG); render(); }
-
-/* --- settings --- */
-function settings(){
-  var h='<h2>Настройки</h2><div class="panel"><b>Приложение</b>';
-  h+='<label>Название</label><input id="set_name" value="'+esc(CFG.appName)+'">';
-  h+='<label>Код тренера (для приглашений)</label><input id="set_code" value="'+esc(CFG.inviteCode)+'"></div>';
-  h+='<div class="panel"><b>Скидки и блок</b>';
-  h+='<label>Скидка за половину блока, %</label><input id="set_dh" type="number" value="'+CFG.discountHalf+'">';
-  h+='<label>Скидка за полный блок, %</label><input id="set_df" type="number" value="'+CFG.discountFull+'">';
-  h+='<label>Длина блока по умолчанию</label><input id="set_bl" type="number" value="'+CFG.blockLen+'"></div>';
-  h+='<div class="panel"><b>XP по умолчанию</b>';
-  h+='<label>За тренировку</label><input id="set_xt" type="number" value="'+CFG.xpTrain+'">';
-  h+='<label>За питание</label><input id="set_xf" type="number" value="'+CFG.xpFood+'">';
-  h+='<label>За привычку</label><input id="set_xh" type="number" value="'+CFG.xpHabit+'">';
-  h+='<label>Бонус за серию (XP)</label><input id="set_sb" type="number" value="'+CFG.streakBonus+'">';
-  h+='<label>Серия каждые N дней</label><input id="set_se" type="number" value="'+CFG.streakEvery+'"></div>';
-  h+='<div class="panel"><b>Риск отвала</b><label>Дней без активности для тревоги</label><input id="set_wd" type="number" value="'+CFG.warnDays+'"></div>';
-  h+='<button onclick="saveSettings()">Сохранить настройки</button>';
-  h+='<div class="panel"><b>Хранилище</b><div class="mut">'+(FIREBASE_CONFIG.databaseURL?'Firebase подключён':'Демо-режим: данные в этом браузере. Для синхронизации заполните FIREBASE_CONFIG в начале скрипта.')+'</div></div>';
-  h+='<div class="panel"><b>Данные</b><button class="danger" onclick="resetDemo()">Сбросить демо-данные</button></div>';
-  return h;
-}
-function saveSettings(){
-  CFG.appName=document.getElementById('set_name').value||CFG.appName;
-  CFG.inviteCode=document.getElementById('set_code').value||CFG.inviteCode;
-  CFG.discountHalf=parseFloat(document.getElementById('set_dh').value)||CFG.discountHalf;
-  CFG.discountFull=parseFloat(document.getElementById('set_df').value)||CFG.discountFull;
-  CFG.blockLen=parseInt(document.getElementById('set_bl').value)||CFG.blockLen;
-  CFG.xpTrain=parseInt(document.getElementById('set_xt').value)||CFG.xpTrain;
-  CFG.xpFood=parseInt(document.getElementById('set_xf').value)||CFG.xpFood;
-  CFG.xpHabit=parseInt(document.getElementById('set_xh').value)||CFG.xpHabit;
-  CFG.streakBonus=parseInt(document.getElementById('set_sb').value)||CFG.streakBonus;
-  CFG.streakEvery=parseInt(document.getElementById('set_se').value)||CFG.streakEvery;
-  CFG.warnDays=parseInt(document.getElementById('set_wd').value)||CFG.warnDays;
-  save(CFG_KEY,CFG); toast('Настройки сохранены'); render();
-}
-function resetDemo(){ if(confirm('Сбросить все данные?')){ localStorage.removeItem(DATA_KEY); location.reload(); } }
-
-/* --- render --- */
-function rerender(){ render(); }
-function render(){
-  document.title=CFG.appName+' — Тренер';
-  var el=document.getElementById('app');
-  if(!user){ el.innerHTML = '<div class="login"><h1>'+esc(CFG.appName)+'</h1><p class="mut">Кабинет тренера</p><label>Логин</label><input id="luser" value="trainer"><label>Пароль</label><input id="lpass" type="password" onkeydown="if(event.key===\'Enter\')login()"><button onclick="login()">Войти</button></div>'; return; }
-  var nav=[['dash','📊 Дашборд'],['clients','👥 Клиенты'],['schedule','📅 Расписание'],['checks','✅ Проверки'],['finance','💰 Финансы'],['shop','🎁 Лавка'],['settings','⚙️ Настройки']];
-  var h='';
-  if(tab==='dash') h=dashboard();
-  else if(tab==='clients') h=clientsList();
-  else if(tab==='client') h=clientCard();
-  else if(tab==='schedule') h=schedule();
-  else if(tab==='checks') h=checks();
-  else if(tab==='finance') h=finance();
-  else if(tab==='shop') h=shop();
-  else if(tab==='settings') h=settings();
-  el.innerHTML=h;
-  document.querySelectorAll('.nav span').forEach(function(s){ s.classList.toggle('on',s.dataset.t===tab); });
-  drawWeightChart();
-}
-</script></body></html>
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FitQuest — Тренер</title>
+<link rel="manifest" href='data:application/json,{"name":"FitQuest Тренер","short_name":"FitQuest","display":"standalone","start_url":"./trener.html","background_color":"%23171a26","theme_color":"%235b5bf0"}'>
+<style>
+:root{--bg:#f2f3f8;--bg2:#ffffff;--tx:#171a26;--tx2:#6a7086;--line:#e6e8f0;--card:#ffffff;--acc:#5b5bf0;--acc2:#8b5cf6;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--rad:20px;--sh:0 10px 30px rgba(23,26,38,.08),0 2px 8px rgba(23,26,38,.05)}
+body.dark{--bg:#0d1020;--bg2:#141830;--tx:#eef0fa;--tx2:#9aa0bd;--line:#252a48;--card:#181c34;--sh:0 10px 30px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,'SF Pro Display','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;position:relative;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(600px 300px at 15% -5%,rgba(91,91,240,.16),transparent 60%),radial-gradient(500px 280px at 90% 10%,rgba(139,92,246,.12),transparent 60%),radial-gradient(700px 400px at 50% 110%,rgba(91,91,240,.10),transparent 60%)}
+main,header,nav{position:relative;z-index:1}
+.hdr{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hdr-in{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:20px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hbtn{display:flex;gap:8px;align-items:center}
+main{max-width:1040px;margin:0 auto;padding:24px 20px 120px}
+h1.title{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 18px}
+h2.sec{font-size:15px;font-weight:700;color:var(--tx2);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--sh);padding:18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-2px)}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.bento{grid-template-columns:1fr 1fr}}
+.tile{padding:18px;position:relative}
+.tile::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-40px;top:-40px;background:linear-gradient(135deg,rgba(91,91,240,.14),rgba(139,92,246,.05))}
+.tile .lbl{font-size:13px;color:var(--tx2);font-weight:600}
+.tile .val{font-size:30px;font-weight:800;letter-spacing:-1px;margin-top:6px}
+.tile.hero{grid-column:1/-1;background:linear-gradient(120deg,#5b5bf0,#8b5cf6);color:#fff;border:none}
+.tile.hero::after{background:rgba(255,255,255,.14)}
+.tile.hero .lbl{color:rgba(255,255,255,.8)}
+.cap{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;margin-top:8px}
+.cap.up{background:rgba(22,163,74,.12);color:var(--ok)}
+.cap.down{background:rgba(220,38,38,.12);color:var(--bad)}
+.cap.warn{background:rgba(217,119,6,.14);color:var(--warn)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(120deg,var(--acc),var(--acc2));color:#fff;border:none;border-radius:14px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(91,91,240,.35);transition:transform .15s,box-shadow .15s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--card);color:var(--tx);box-shadow:none;border:1px solid var(--line)}
+.btn.danger{background:rgba(220,38,38,.1);color:var(--bad);box-shadow:none}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:11px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.inp{width:100%;background:var(--bg2);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;color:var(--tx);outline:none;transition:border .2s}
+.inp:focus{border-color:var(--acc)}
+label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12px 0 6px}
+.list{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .15s;box-shadow:var(--sh)}
+.item:hover{transform:translateY(-2px)}
+.av{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0}
+.ring{width:40px;height:40px;flex-shrink:0}
+.ring circle.bg{stroke:var(--line)}
+.ring circle.fg{stroke:url(#grad);stroke-linecap:round;transition:stroke-dashoffset .6s}
+.nav{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:flex;justify-content:space-around;background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:22px;padding:8px;box-shadow:var(--sh)}
+.nav button{background:none;border:none;color:var(--tx2);font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;cursor:pointer;border-radius:14px;flex:1}
+.nav button.on{color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.nav .ic{font-size:19px;line-height:1}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(10,12,24,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+@media(min-width:700px){.modal{align-items:center}}
+.modal.open{display:flex}
+.mcard{background:var(--card);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:22px;animation:up .25s ease}
+@media(min-width:700px){.mcard{border-radius:24px;animation:pop .2s ease}}
+@keyframes up{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--tx);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:200;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.errbox{display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#dc2626;color:#fff;padding:12px 16px;font:13px/1.4 monospace;white-space:pre-wrap}
+.fade{animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bars .b{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2));margin-top:6px;transition:width .5s}
+.track{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.tgl{position:relative;width:46px;height:26px;border-radius:99px;background:var(--line);cursor:pointer;transition:.2s;flex-shrink:0;border:none}
+.tgl::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tgl.on{background:var(--ok)}
+.tgl.on::after{left:23px}
+.tabbar{display:flex;gap:8px;margin:14px 0}
+.tabbar button{background:var(--bg2);border:1.5px solid var(--line);color:var(--tx2);padding:8px 16px;border-radius:99px;font-size:13.5px;font-weight:700;cursor:pointer}
+.tabbar button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pill{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+.pill.red{background:rgba(220,38,38,.12);color:var(--bad)}
+.pill.green{background:rgba(22,163,74,.12);color:var(--ok)}
+.pill.blue{background:rgba(91,91,240,.12);color:var(--acc)}
+.pill.gray{background:var(--line);color:var(--tx2)}
+.msg{max-width:75%;padding:10px 14px;border-radius:16px;font-size:14px;margin:4px 0}
+.msg.me{background:linear-gradient(120deg,var(--acc),var(--acc2));color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+.msg.them{background:var(--bg2);border:1px solid var(--line);border-bottom-left-radius:5px}
+.empty{text-align:center;color:var(--tx2);padding:30px 10px;font-size:14px}
+.chart{width:100%;height:120px}
+</style></head>
+<body>
+<div id="errbox" class="errbox"></div>
+<header class="hdr"><div class="hdr-in">
+<div class="logo">Fit<span style="font-weight:400">Quest</span></div>
+<div class="hbtn"><button class="btn ghost sm" id="themeBtn" data-act="theme">🌙</button></div>
+</div></header>
+<main id="app" class="fade"></main>
+<nav class="nav" id="nav"></nav>
+<div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard" onclick="event.stopPropagation()"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+window.addEventListener('error',function(e){var b=document.getElementById('errbox');b.style.display='block';b.textContent='Ошибка скрипта: '+e.message+' (строка '+e.lineno+')';});
+var KEY='fitquest_v3';
+function demo(){return{auth:false,theme:'auto',invite:'FIT-7K2Q',tariffs:[{n:'Индивидуальная',p:2500},{n:'Онлайн',p:1800},{n:'Пилатес группа',p:1900}],
+clients:[
+{id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',emoji:'🐰',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,disc:10,lastActive:2,sub:{left:6,total:12,frozen:false},notes:'Любит утренние тренировки',tags:['пилатес','спина'],quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Готова к отчёту за завтра!'}],report:{quest:'Пилатес и укрепление спины',date:'сегодня',text:'Выполнила всю программу, спина не болит'}},
+{id:'c2',name:'Иван Петров',login:'ivan',pass:'1234',emoji:'🐻',c:'#3b82f6',xp:150,streak:0,blockDay:2,blockLen:21,disc:0,lastActive:7,sub:{left:2,total:8,frozen:false},notes:'Нужно вернуть к тренировкам',tags:['новичок'],quests:[{n:'Блок «База: всё тело»',d:2,t:21}],measures:[{d:'20.10',w:84.0},{d:'27.10',w:83.2}],chat:[],report:null}],
+sessions:[{id:'s1',date:0,time:'10:00',title:'Пилатес (группа)',price:1900,type:'group',who:['c1'],paid:['c1']},{id:'s2',date:0,time:'18:30',title:'Индивидуальная',price:2500,type:'indiv',who:['c2'],paid:[]},{id:'s3',date:1,time:'09:00',title:'Онлайн',price:1800,type:'online',who:['c1'],paid:[]}],
+rewards:[{n:'Скидка 10% на месяц',cost:300},{n:'Гостевой визит для друга',cost:500},{n:'Фитнес-марафон бесплатно',cost:1000}],purchases:[]};}
+function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return demo();}
+var S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2200);}
+function today0(){var d=new Date();d.setHours(0,0,0,0);return d;}
+function fmt(d){return d.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];}
+function monthName(i){return ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'][i];}
+var VIEW='dash',TABS={dash:'🏠|Дашборд',clients:'👥|Клиенты',schedule:'📅|Расписание',checks:'✅|Проверки',finance:'💰|Финансы',shop:'🎁|Лавка',settings:'⚙️|Настройки'};
+function clientById(id){for(var i=0;i<S.clients.length;i++)if(S.clients[i].id===id)return S.clients[i];return null;}
+function ring(pct){pct=Math.max(0,Math.min(100,pct));var r=16,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 40 40"><defs><linearGradient id="grad"><stop offset="0%" stop-color="#5b5bf0"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs><circle class="bg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4"/><circle class="fg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4" stroke-dasharray="'+c+'" stroke-dashoffset="'+(c-c*pct/100)+'" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">'+pct+'%</text></svg>';}
+function applyTheme(){var t=S.theme;if(t==='auto'){t=(new Date().getHours()>=20||new Date().getHours()<8)?'dark':'light';}document.body.classList.toggle('dark',t==='dark');var b=document.getElementById('themeBtn');if(b)b.textContent=t==='dark'?'☀️':'🌙';}
+function setTheme(){S.theme=document.body.classList.contains('dark')?'light':'dark';save();applyTheme();}
+function renderNav(){var n=document.getElementById('nav');var h='';for(var k in TABS){var p=TABS[k].split('|');h+='<button data-act="nav" data-v="'+k+'" class="'+(VIEW===k?'on':'')+'"><span class="ic">'+p[0]+'</span>'+p[1]+'</button>';}n.innerHTML=h;}
+function go(v){VIEW=v;renderNav();render();}
+function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,finance:rFinance,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';}
+function modal(html){document.getElementById('mcard').innerHTML=html;document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function rDash(){var m=new Date().getMonth(),y=new Date().getFullYear();var rev=0,pay=0;S.sessions.forEach(function(s){var d=new Date(today0());d.setDate(d.getDate()+s.date);var inMonth=d.getMonth()===m&&d.getFullYear()===y;s.who.forEach(function(cid){var amt=s.price/(s.who.length||1);if(s.paid.indexOf(cid)>=0){if(inMonth)rev+=amt;}else pay+=amt;});});
+var checks=S.clients.filter(function(c){return c.report;}).length;
+var risk=S.clients.filter(function(c){return c.lastActive>=7;});
+var top=S.clients.slice().sort(function(a,b){return b.xp-a.xp;}).slice(0,3);
+var h='<h1 class="title">Дашборд</h1><div class="bento">'
++'<div class="card tile"><div class="lbl">Клиенты</div><div class="val">'+S.clients.length+'</div></div>'
++'<div class="card tile"><div class="lbl">Ждут проверки</div><div class="val">'+checks+'</div></div>'
++'<div class="card tile"><div class="lbl">Выручка за месяц</div><div class="val">'+fmtMoney(rev)+'</div><span class="cap up">▲ +3% чем 30 дней назад</span></div>'
++'<div class="card tile"><div class="lbl">Ждёт оплаты</div><div class="val">'+fmtMoney(pay)+'</div></div>'
++'<div class="card" style="grid-column:1/-1"><b>Риск отвала</b>';
+if(!risk.length)h+='<div class="empty">Все клиенты на связи 👌</div>';
+risk.forEach(function(c){h+='<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>'+c.emoji+' <b>'+esc(c.name)+'</b></span><span class="cap down">▼ '+c.lastActive+' дн. тишины</span></div>';});
+h+='</div><div class="card" style="grid-column:1/-1"><b>Топ по XP</b>';
+top.forEach(function(c,i){h+='<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>'+(i+1)+'. '+c.emoji+' '+esc(c.name)+'</span><b>'+c.xp+' XP</b></div>';});
+return h+'</div></div>';}
+function fmtMoney(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽';}
+function rClients(){var h='<h1 class="title">Клиенты</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addclient">＋ Добавить клиента</button></div><div class="list">';
+S.clients.forEach(function(c){var pct=Math.round(c.blockDay/c.blockLen*100);
+h+='<div class="item" data-act="client" data-id="'+c.id+'"><div class="av" style="background:'+c.c+'">'+c.emoji+'</div><div style="flex:1;min-width:0"><b>'+esc(c.name)+'</b><div style="font-size:12.5px;color:var(--tx2)">Ур.'+Math.floor(c.xp/100+1)+' · '+c.xp+' XP · серия '+c.streak+' 🔥</div></div><div class="row" style="gap:8px">'+(c.lastActive>=7?'<span class="pill red">риск</span>':'')+ring(pct)+'</div></div>';});
+return h+'</div>';}
+function openClient(id){var c=clientById(id);if(!c)return;window._cid=id;clientTab('profile');}
+function clientTab(t){window._ctab=t;var c=clientById(window._cid);if(!c)return;var h='<div class="row" style="justify-content:space-between"><b style="font-size:18px">'+c.emoji+' '+esc(c.name)+'</b><button class="btn ghost sm" data-act="closemodal2">✕</button></div><div class="tabbar">'+['profile|Профиль','quests|Квесты','meas|Замеры','pay|Оплаты','chat|Чат'].map(function(x){var p=x.split('|');return '<button class="'+(t===p[0]?'on':'')+'" data-act="ctab" data-t="'+p[0]+'">'+p[1]+'</button>';}).join('')+'</div>';
+if(t==='profile'){h+='<label class="fl">Заметки</label><div class="inp" contenteditable style="min-height:60px" id="cnotes">'+esc(c.notes)+'</div><label class="fl">Теги (через запятую)</label><input class="inp" id="ctags" value="'+esc(c.tags.join(', '))+'"><label class="fl">Абонемент</label><div class="card" style="box-shadow:none"><div class="row" style="justify-content:space-between"><span>Осталось занятий: <b>'+c.sub.left+'</b> из '+c.sub.total+'</span><button class="btn sm '+(c.sub.frozen?'':'ghost')+'" data-act="freeze">'+(c.sub.frozen?'Разморозить':'Заморозить')+'</button></div></div><div class="row" style="margin-top:14px"><button class="btn sm" data-act="cnotesSave">Сохранить</button><button class="btn sm danger" data-act="delclient">Удалить клиента</button></div>';}
+if(t==='quests'){c.quests.forEach(function(q,i){h+='<div class="card" style="margin-top:12px;box-shadow:none"><div class="row" style="justify-content:space-between"><b>'+esc(q.n)+'</b><button class="btn ghost sm" data-act="delquest" data-i="'+i+'">✕</button></div><div class="track" style="margin-top:10px"><div class="bars" style="width:'+Math.round(q.d/q.t*100)+'%"></div></div><div style="font-size:12.5px;color:var(--tx2);margin-top:6px">'+q.d+' из '+q.t+' дней</div></div>';});h+='<button class="btn sm" style="margin-top:12px" data-act="addquest">＋ Добавить квест</button>';}
+if(t==='meas'){h+='<canvas class="chart" id="wchart"></canvas><div class="row" style="margin-top:10px"><input class="inp" id="mw" type="number" step="0.1" placeholder="Вес, кг" style="flex:1"><button class="btn sm" data-act="addmeas">＋</button></div>';}
+if(t==='pay'){var sum=0;S.sessions.forEach(function(s){if(s.who.indexOf(c.id)>=0){var amt=s.price/s.who.length;sum+=amt;h+='<div class="item" style="cursor:default;box-shadow:none"><div style="flex:1"><b>'+esc(s.title)+'</b><div style="font-size:12.5px;color:var(--tx2)">'+fmtMoney(amt)+'</div></div><button class="tgl '+(s.paid.indexOf(c.id)>=0?'on':'')+'" data-act="paidtgl" data-s="'+s.id+'"></button></div>';}});if(!sum)h+='<div class="empty">Пока нет занятий</div>';}
+if(t==='chat'){h+='<div style="max-height:300px;overflow:auto" id="chatbox">';(c.chat||[]).forEach(function(m){h+='<div class="msg '+(m.who==='me'?'me':'them')+'">'+esc(m.t)+'</div>';});if(!(c.chat||[]).length)h+='<div class="empty">Сообщений пока нет</div>';h+='</div><div class="row" style="margin-top:10px"><input class="inp" id="cmsg" placeholder="Сообщение…" style="flex:1" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn sm" data-act="sendmsg">➤</button></div>';}
+modal(h);if(t==='meas')drawChart(c);}
+function drawChart(c){var cv=document.getElementById('wchart');if(!cv)return;var d=c.measures;if(d.length<2){var g=cv.getContext('2d');g.font='13px sans-serif';g.fillStyle=getComputedStyle(document.body).getPropertyValue('--tx2');g.fillText('Добавьте минимум 2 замера',10,60);return;}
+var ws=d.map(function(m){return m.w;});var mn=Math.min.apply(null,ws)-1,mx=Math.max.apply(null,ws)+1;var g=cv.getContext('2d'),W=cv.width=cv.offsetWidth*2,H=cv.height=240;g.scale(1,1);g.clearRect(0,0,W,H);var pts=d.map(function(m,i){return [40+i*(W-60)/(d.length-1),H-30-(m.w-mn)/(mx-mn)*(H-60)];});
+g.strokeStyle='#5b5bf0';g.lineWidth=5;g.lineJoin='round';g.beginPath();pts.forEach(function(p,i){i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]);});g.stroke();
+pts.forEach(function(p){g.beginPath();g.arc(p[0],p[1],7,0,7);g.fillStyle='#8b5cf6';g.fill();});}
+function sendMsg(){var c=clientById(window._cid),el=document.getElementById('cmsg');if(!c||!el.value.trim())return;c.chat=(c.chat||[]);c.chat.push({who:'me',t:el.value.trim()});el.value='';save();clientTab('chat');var b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;}
+function rSchedule(){var h='<h1 class="title">Расписание</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addsess">＋ Занятие</button></div><div class="list">';
+var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(s);});
+var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
+keys.forEach(function(off){var d=new Date(today0());d.setDate(d.getDate()+off);
+h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
+days[off].forEach(function(s){h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+s.time+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">'+fmtMoney(s.price)+' · '+(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
+s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;h+='<div class="row" style="justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><span>'+cc.emoji+' '+esc(cc.name)+'</span><div class="row"><span style="font-size:12px;color:var(--tx2)">'+(s.paid.indexOf(cid)>=0?'оплачено':'ждёт')+'</span><button class="tgl '+(s.paid.indexOf(cid)>=0?'on':'')+'" data-act="paidtgl" data-s="'+s.id+'" data-c="'+cid+'"></button></div></div>';});
+h+='<button class="btn ghost sm" style="margin-top:8px" data-act="delsess" data-id="'+s.id+'">Удалить</button></div>';});});
+return h+'</div>';}
+function rChecks(){var h='<h1 class="title">Проверки</h1><div class="list">';var n=0;
+S.clients.forEach(function(c){if(!c.report)return;n++;h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+c.emoji+' '+esc(c.name)+'</b><span class="pill gray">'+esc(c.report.date)+'</span></div><div style="margin:8px 0;font-size:14px"><span class="pill blue">'+esc(c.report.quest)+'</span></div><p style="font-size:14px;color:var(--tx2)">'+esc(c.report.text)+'</p><div class="row" style="margin-top:12px"><button class="btn sm" data-act="approve" data-id="'+c.id+'">✔ Засчитать (+50 XP)</button><button class="btn sm danger" data-act="reject" data-id="'+c.id+'">Отклонить</button></div></div>';});
+if(!n)h+='<div class="empty">Все отчёты обработаны 🎉</div>';
+return h+'</div>';}
+function rFinance(){var m=window._fm==null?new Date().getMonth():window._fm,y=window._fy==null?new Date().getFullYear():window._fy;window._fm=m;window._fy=y;
+var rev=0,pay=0,per={};S.sessions.forEach(function(s){var d=new Date(today0());d.setDate(d.getDate()+s.date);if(d.getMonth()!==m||d.getFullYear()!==y)return;
+s.who.forEach(function(cid){var amt=s.price/s.who.length;per[cid]=(per[cid]||0)+(s.paid.indexOf(cid)>=0?amt:0);if(s.paid.indexOf(cid)>=0)rev+=amt;else pay+=amt;});});
+var flt=window._flt||'all';
+var h='<h1 class="title">Финансы</h1><div class="row" style="margin-bottom:12px"><button class="btn ghost sm" data-act="mprev">‹</button><b style="min-width:130px;text-align:center">'+monthName(m)+' '+y+'</b><button class="btn ghost sm" data-act="mnext">›</button></div><div class="tabbar">'+[['all','Все'],['paid','Оплачено'],['pay','Ждёт оплаты']].map(function(x){return '<button class="'+(flt===x[0]?'on':'')+'" data-act="flt" data-f="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>';
+h+='<div class="bento"><div class="card tile"><div class="lbl">Получено</div><div class="val">'+fmtMoney(rev)+'</div><span class="cap up">▲ +3% чем 30 дней назад</span></div><div class="card tile"><div class="lbl">Ожидает</div><div class="val">'+fmtMoney(pay)+'</div></div></div>';
+h+='<h2 class="sec">По клиентам</h2><div class="card">';
+var mx=1;for(var k in per)mx=Math.max(mx,per[k]);var any=false;
+S.clients.forEach(function(c){if(!(per[c.id]>0))return;any=true;h+='<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span>'+c.emoji+' '+esc(c.name)+'</span><b>'+fmtMoney(per[c.id])+' · '+Math.round(per[c.id]/rev*100)+'%</b></div><div class="track"><div class="bars" style="width:'+Math.round(per[c.id]/mx*100)+'%"></div></div></div>';});
+if(!any)h+='<div class="empty">Нет оплат в этом месяце</div>';h+='</div>';
+if(flt!=='all'){h+='<h2 class="sec">'+(flt==='paid'?'Оплаченные занятия':'Ждут оплаты')+'</h2><div class="list">';
+S.sessions.forEach(function(s){s.who.forEach(function(cid){var cc=clientById(cid);var isP=s.paid.indexOf(cid)>=0;if(flt==='paid'?!isP:isP)return;h+='<div class="item" style="cursor:default"><div style="flex:1"><b>'+esc(cc?cc.name:'')+'</b> · '+esc(s.title)+'</div><b>'+fmtMoney(s.price/s.who.length)+'</b></div>';});});
+h+='</div>';}
+h+='<h2 class="sec">Тарифы</h2><div class="list">';
+S.tariffs.forEach(function(t,i){h+='<div class="item" style="cursor:default"><div style="flex:1"><b>'+esc(t.n)+'</b></div><b>'+fmtMoney(t.p)+'</b><button class="btn ghost sm" data-act="deltariff" data-i="'+i+'">✕</button></div>';});
+h+='</div><div class="row" style="margin-top:12px"><input class="inp" id="tn" placeholder="Название тарифа" style="flex:2"><input class="inp" id="tp" type="number" placeholder="Цена" style="flex:1"><button class="btn sm" data-act="addtariff">＋</button></div>';
+return h;}
+function rShop(){var h='<h1 class="title">Лавка наград</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addreward">＋ Награда</button></div><div class="list">';
+S.rewards.forEach(function(r,i){h+='<div class="card" style="display:flex;align-items:center;gap:12px"><div style="flex:1"><b>'+esc(r.n)+'</b><div style="font-size:12.5px;color:var(--tx2)">Цена: '+r.cost+' XP</div></div><button class="btn ghost sm" data-act="delreward" data-i="'+i+'">✕</button></div>';});
+if(!S.rewards.length)h+='<div class="empty">Добавьте первые награды</div>';
+if(S.purchases.length){h+='<h2 class="sec">Заявки на покупку</h2>';
+S.purchases.forEach(function(p,i){var c=clientById(p.cid);h+='<div class="card"><div class="row" style="justify-content:space-between"><span>'+esc(c?c.name:'')+' → <b>'+esc(p.n)+'</b></span><button class="btn sm" data-act="okpurchase" data-i="'+i+'">Выдать</button></div></div>';});}
+return h+'</div>';}
+function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:15px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
+return h;}
+document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
+if(act==='nav')go(el.getAttribute('data-v'));
+else if(act==='theme')setTheme();
+else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();applyTheme();render();}
+else if(act==='closemodal'||act==='closemodal2')closeModal();
+else if(act==='client')openClient(el.getAttribute('data-id'));
+else if(act==='ctab')clientTab(el.getAttribute('data-t'));
+else if(act==='cnotesSave'){var c=clientById(window._cid);c.notes=document.getElementById('cnotes').textContent;c.tags=document.getElementById('ctags').value.split(',').map(function(s){return s.trim();}).filter(Boolean);save();toast('Сохранено ✅');}
+else if(act==='delclient'){S.clients=S.clients.filter(function(x){return x.id!==window._cid;});save();closeModal();render();toast('Клиент удалён');}
+else if(act==='freeze'){var c2=clientById(window._cid);c2.sub.frozen=!c2.sub.frozen;save();clientTab('profile');toast(c2.sub.frozen?'Абонемент заморожен ❄️':'Абонемент активен');}
+else if(act==='addquest'){var n=prompt('Название квеста:');if(!n)return;var c3=clientById(window._cid);c3.quests.push({n:n,d:0,t:21});save();clientTab('quests');}
+else if(act==='delquest'){var c4=clientById(window._cid);c4.quests.splice(+el.getAttribute('data-i'),1);save();clientTab('quests');}
+else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);if(!w)return;var d=new Date();c5.measures.push({d:d.getDate()+'.'+(d.getMonth()+1),w:w});save();clientTab('meas');toast('Замер добавлен');}
+else if(act==='paidtgl'){var s=S.sessions.find(function(x){return x.id===el.getAttribute('data-s');});var cid=el.getAttribute('data-c')||window._cid;var i=s.paid.indexOf(cid);if(i>=0)s.paid.splice(cid,1);else s.paid.push(cid);save();if(window._ctab)clientTab(window._ctab);else render();toast(i>=0?'Оплата отменена':'Оплата принята 💰');}
+else if(act==='sendmsg')sendMsg();
+else if(act==='addclient'){var n=prompt('Имя клиента:');if(!n)return;var id='c'+Date.now();S.clients.push({id:id,name:n,login:'user'+Math.floor(Math.random()*900+100),pass:'1234',emoji:'🙂',c:'#8b5cf6',xp:0,streak:0,blockDay:0,blockLen:21,disc:0,lastActive:0,sub:{left:0,total:8,frozen:false},notes:'',tags:[],quests:[],measures:[],chat:[],report:null});save();render();toast('Клиент создан');}
+else if(act==='addsess'){modal('<b style="font-size:17px">Новое занятие</b><label class="fl">Название</label><input class="inp" id="st" value="Индивидуальная"><label class="fl">Тариф</label><select class="inp" id="star">'+S.tariffs.map(function(t){return '<option value="'+t.p+'">'+esc(t.n)+' — '+fmtMoney(t.p)+'</option>';}).join('')+'</select><label class="fl">День (0 — сегодня)</label><input class="inp" id="sd" type="number" value="0"><div class="row" style="margin-top:14px"><button class="btn" data-act="savesess">Создать</button></div>');}
+else if(act==='savesess'){S.sessions.push({id:'s'+Date.now(),date:+document.getElementById('sd').value||0,time:'10:00',title:document.getElementById('st').value||'Занятие',price:+document.getElementById('star').value,type:'indiv',who:[],paid:[]});save();closeModal();render();toast('Занятие создано');}
+else if(act==='delsess'){S.sessions=S.sessions.filter(function(x){return x.id!==el.getAttribute('data-id');});save();render();}
+else if(act==='approve'){var c6=clientById(el.getAttribute('data-id'));c6.xp+=50;c6.streak++;c6.lastActive=0;c6.report=null;save();render();toast('Засчитано! +50 XP для '+c6.name.split(' ')[0]);}
+else if(act==='reject'){var c7=clientById(el.getAttribute('data-id'));c7.report=null;save();render();toast('Отчёт отклонён');}
+else if(act==='flt'){window._flt=el.getAttribute('data-f');render();}
+else if(act==='mprev'){window._fm--;if(window._fm<0){window._fm=11;window._fy--;}render();}
+else if(act==='mnext'){window._fm++;if(window._fm>11){window._fm=0;window._fy++;}render();}
+else if(act==='deltariff'){S.tariffs.splice(+el.getAttribute('data-i'),1);save();render();}
+else if(act==='addtariff'){var tn=document.getElementById('tn').value.trim(),tp=+document.getElementById('tp').value;if(!tn||!tp)return;S.tariffs.push({n:tn,p:tp});save();render();toast('Тариф добавлен');}
+else if(act==='addreward'){var n2=prompt('Название награды:');if(!n2)return;var c8=prompt('Цена в XP:');S.rewards.push({n:n2,cost:+c8||100});save();render();}
+else if(act==='delreward'){S.rewards.splice(+el.getAttribute('data-i'),1);save();render();}
+else if(act==='okpurchase'){S.purchases.splice(+el.getAttribute('data-i'),1);save();render();toast('Награда выдана 🎁');}
+else if(act==='copycode'){navigator.clipboard&&navigator.clipboard.writeText(S.invite);toast('Код скопирован');}
+else if(act==='resetdemo'){S=demo();S.auth=true;save();applyTheme();renderNav();render();toast('Демо-данные восстановлены');}});
+function tryLogin(){var p=document.getElementById('pw');if(p.value==='1234'){S.auth=true;save();renderNav();render();}else toast('Неверный пароль');}
+function boot(){applyTheme();
+if(S.auth){renderNav();render();return;}
+document.getElementById('nav').style.display='none';
+document.getElementById('app').innerHTML='<div style="max-width:380px;margin:12vh auto"><div class="card" style="padding:30px;text-align:center"><div style="font-size:44px">🏋️</div><h1 style="font-size:22px;margin:10px 0">Кабинет тренера</h1><p style="color:var(--tx2);font-size:14px;margin-bottom:16px">Демо-пароль: 1234</p><input class="inp" id="pw" type="password" placeholder="Пароль" onkeydown="if(event.key==='Enter')tryLogin()"><button class="btn" style="width:100%;margin-top:14px;justify-content:center" data-act="login2" onclick="tryLogin()">Войти</button></div></div>';}
+boot();
+</script>
+</body></html>
