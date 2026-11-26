@@ -99,7 +99,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 window.addEventListener('error',function(e){var b=document.getElementById('errbox');b.style.display='block';b.textContent='Ошибка скрипта: '+e.message+' (строка '+e.lineno+')';});
 var KEY='fitquest_v3';
 var S=null;
-function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return demoTrainer();}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.clients&&o.clients.length!==undefined)return o;}}catch(e){}return demoTrainer();}
 function demoTrainer(){return{auth:false,theme:'auto',invite:'FIT-7K2Q',tariffs:[{n:'Индивидуальная',p:2500},{n:'Онлайн',p:1800},{n:'Пилатес группа',p:1900}],
 clients:[
 {id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',emoji:'🐰',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,disc:10,lastActive:2,sub:{left:6,total:12,frozen:false},notes:'',tags:[],quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Привет! Готова к завтрашнему отчёту 💪'}],report:null},
@@ -187,7 +187,7 @@ g.font='24px sans-serif';g.fillStyle='#9aa0bd';pts.forEach(function(p,i){g.fillT
 var _render=render;render=function(){_render();setTimeout(drawChart,30);};
 window.addEventListener('storage',function(){var old=S;S=load();if(old._me!==undefined)window._me=window._me;applyTheme();render();});
 function boot(){if(S===null)S=load();applyTheme();
-var m=null;for(var i=0;i<S.clients.length;i++)if(S.clients[i]._session)m=S.clients[i];
+var m=null;for(var i=0;i<(S.clients||[]).length;i++)if(S.clients[i]._session)m=S.clients[i];
 renderNav();render();}
 boot();
 </script>
