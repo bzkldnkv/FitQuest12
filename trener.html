@@ -92,7 +92,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 </div></header>
 <main id="app" class="fade"></main>
 <nav class="nav" id="nav"></nav>
-<div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard" onclick="event.stopPropagation()"></div></div>
+<div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard"></div></div>
 <div class="toast" id="toast"></div>
 <script>
 window.addEventListener('error',function(e){var b=document.getElementById('errbox');b.style.display='block';b.textContent='Ошибка скрипта: '+e.message+' (строка '+e.lineno+')';});
@@ -196,7 +196,7 @@ document.addEventListener('click',function(e){var el=e.target.closest('[data-act
 if(act==='nav')go(el.getAttribute('data-v'));
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();applyTheme();render();}
-else if(act==='closemodal'||act==='closemodal2')closeModal();
+else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
 else if(act==='client')openClient(el.getAttribute('data-id'));
 else if(act==='ctab')clientTab(el.getAttribute('data-t'));
 else if(act==='cnotesSave'){var c=clientById(window._cid);c.notes=document.getElementById('cnotes').textContent;c.tags=document.getElementById('ctags').value.split(',').map(function(s){return s.trim();}).filter(Boolean);save();toast('Сохранено ✅');}

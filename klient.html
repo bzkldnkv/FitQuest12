@@ -93,7 +93,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 </div></header>
 <main id="app" class="fade"></main>
 <nav class="nav" id="nav"></nav>
-<div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard" onclick="event.stopPropagation()"></div></div>
+<div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard"></div></div>
 <div class="toast" id="toast"></div>
 <script>
 window.addEventListener('error',function(e){var b=document.getElementById('errbox');b.style.display='block';b.textContent='Ошибка скрипта: '+e.message+' (строка '+e.lineno+')';});
@@ -151,13 +151,13 @@ return h+'</div>';}
 function rChat(){var c=me();var h='<h1 class="title">Чат с тренером</h1><div class="card" style="padding:14px"><div style="max-height:50vh;overflow:auto" id="chatbox">';
 (c.chat||[]).forEach(function(m){h+='<div class="msg '+(m.who==='me'?'me':'them')+'">'+esc(m.t)+'</div>';});
 if(!(c.chat||[]).length)h+='<div class="empty">Напишите тренеру первое сообщение</div>';
-h+='</div></div><div class="row" style="margin-top:12px;position:sticky;bottom:80px"><input class="inp" id="cmsg" placeholder="Сообщение…" style="flex:1" onkeydown="if(event.key===\'Enter\')sendMsg()"><button class="btn" data-act="sendmsg">➤</button></div>';
+h+='</div></div><div class="row" style="margin-top:12px;position:sticky;bottom:80px"><input class="inp" id="cmsg" placeholder="Сообщение…" style="flex:1" onkeydown="if(event.key===&apos;Enter&apos;)sendMsg()"><button class="btn" data-act="sendmsg">➤</button></div>';
 return h;}
 function sendMsg(){var c=me(),el=document.getElementById('cmsg');if(!c||!el||!el.value.trim())return;c.chat=c.chat||[];c.chat.push({who:'me',t:el.value.trim()});save();render();var b=document.getElementById('chatbox');if(b)b.scrollTop=b.scrollHeight;}
 document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
 if(act==='nav')go(el.getAttribute('data-v'));
 else if(act==='theme')setTheme();
-else if(act==='closemodal')document.getElementById('modal').classList.remove('open');
+else if(act==='closemodal'){if(e.target.id==='modal')document.getElementById('modal').classList.remove('open');}
 else if(act==='showreg'){window._reg=true;render();}
 else if(act==='backreg'){window._lg=false;render();}
 else if(act==='showlogin'){window._lg=true;render();}
