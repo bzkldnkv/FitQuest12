@@ -24,8 +24,10 @@ main,header,nav{position:relative;z-index:1}
 .side .sp{margin-top:auto;display:flex;flex-direction:column;gap:4px}
 .side{transition:transform .3s ease}
 main{transition:padding-left .3s ease;max-width:1120px;margin:0 auto;padding:24px 24px 60px 258px}
+/* Кнопки шапки скрыты, пока не выполнен вход */
 #burger,#bellBtn{display:none}
-@media(min-width:861px){#burger,#bellBtn{display:inline-flex}}
+body.authed #bellBtn{display:inline-flex}
+@media(min-width:861px){body.authed #burger{display:inline-flex}}
 @media(min-width:861px){body.sidehide .side{transform:translateX(calc(-100% - 20px))}body.sidehide main{padding-left:24px}}
 @media(max-width:860px){
 .side{top:74px;bottom:14px;left:14px;right:auto;width:250px;flex-direction:column;padding:14px 10px;justify-content:flex-start;transform:translateX(calc(-100% - 30px))}
@@ -33,7 +35,7 @@ main{transition:padding-left .3s ease;max-width:1120px;margin:0 auto;padding:24p
 .side .sp{margin-top:auto;flex-direction:column}
 body.sideopen .side{transform:none}
 main{max-width:100%;padding:20px 16px 40px}
-#burger,#bellBtn{display:inline-flex}
+body.authed #burger{display:inline-flex}
 #scrim.on{display:block}
 }
 #bellBtn{position:relative;width:42px;justify-content:center;padding:11px 0}
@@ -126,6 +128,15 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .nrow .ntx b{font-size:14px;display:block}
 .nrow .ntx span{font-size:12px;color:var(--tx2)}
 .nrow.unread{border-left:3px solid var(--acc);padding-left:9px}
+/* Календарь расписания */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal .cw{text-align:center;font-size:11px;color:var(--tx2);font-weight:700;padding:4px 0}
+.cal .cd{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-weight:700;font-size:14px;position:relative;transition:border-color .15s}
+.cal .cd:hover{border-color:var(--acc)}
+.cal .cd.today{border-color:var(--acc);color:var(--acc)}
+.cal .cd.sel{background:linear-gradient(120deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.cal .cd .dot{position:absolute;bottom:6px;width:5px;height:5px;border-radius:50%;background:var(--acc)}
+.cal .cd.sel .dot{background:#fff}
 </style></head>
 <body>
 <div id="errbox" class="errbox"></div>
@@ -266,7 +277,7 @@ function demo(){return{auth:false,theme:'light',invite:'FIT-7K2Q',widgets:[],das
 clients:[
 {id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,lastActive:2,notes:'Любит утренние тренировки',tags:['пилатес','спина'],lastApproved:null,unread:1,quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Готова к отчёту за завтра!'}],report:{quest:'Пилатес и укрепление спины',date:'сегодня',text:'Выполнила всю программу, спина не болит'}},
 {id:'c2',name:'Иван Петров',login:'ivan',pass:'1234',c:'#3b82f6',xp:150,streak:0,blockDay:2,blockLen:21,lastActive:7,notes:'Нужно вернуть к тренировкам',tags:['новичок'],lastApproved:null,unread:0,quests:[{n:'Блок «База: всё тело»',d:2,t:21}],measures:[{d:'20.10',w:84.0},{d:'27.10',w:83.2}],chat:[],report:null}],
-sessions:[{id:'s1',date:0,time:'10:00',title:'Пилатес (группа)',type:'group',ex:'Суставная разминка\nСотня\nМост пилатес\nПоза ребёнка',who:['c1'],done:['c1']},{id:'s2',date:0,time:'18:30',title:'Индивидуальная',type:'indiv',ex:'Суставная разминка\nПриседания без веса\nОтжимания от пола\nПланка\nСкручивания\nПоза ребёнка',who:['c2'],done:[]},{id:'s3',date:1,time:'09:00',title:'Онлайн',type:'online',ex:'',who:['c1'],done:[]}],
+sessions:[{id:'s1',date:0,time:'10:00',title:'Пилатес (группа)',type:'group',ex:'Суставная разминка\nСотня\nМост пилатес\nПоза ребёнка',who:['c1'],done:['c1']},{id:'s2',date:0,time:'18:30',title:'Индивидуальная',type:'indiv',ex:'Суставная разминка\nПриседания без веса\nОтжимания от пола\nПланка\nСкручивания\nПоза ребёнка',who:['c2'],done:[]},{id:'s3',date:1,time:'09:00',title:'Онлайн',type:'online',ex:'',who:['c1'],done:[]},{id:'s4',date:3,time:'19:00',title:'Кроссфит (группа)',type:'group',ex:'',who:['c1','c2'],done:[]},{id:'s5',date:-1,time:'11:00',title:'Растяжка',type:'indiv',ex:'',who:['c1'],done:['c1']}],
 rewards:[{n:'Скидка 10% на месяц',cost:300},{n:'Гостевой визит для друга',cost:500},{n:'Фитнес-марафон бесплатно',cost:1000}],purchases:[]};}
 function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return demo();}
 var S=load();
@@ -274,6 +285,8 @@ function normalize(){
 if(!S.widgets)S.widgets=[];if(!S.dashHide)S.dashHide=[];if(!S.dashOrder)S.dashOrder=[];
 if(!S.secOrder)S.secOrder=[];if(!S.log)S.log=[];if(!S.notifs)S.notifs=[];
 if(!S.clientSort)S.clientSort='xp';
+if(S.calMode!=='list'&&S.calMode!=='cal')S.calMode='cal';
+if(S.calSel==null)S.calSel=0;if(S.calM==null)S.calM=0;
 if(!S.rewards)S.rewards=[];if(!S.purchases)S.purchases=[];
 S.clients.forEach(function(c){if(!c.lastApproved)c.lastApproved=null;if(!c.chat)c.chat=[];if(!c.tags)c.tags=[];if(c.unread==null)c.unread=0;});
 ensureEx();}
@@ -286,7 +299,8 @@ function addLog(m){S.log.unshift({d:new Date().toLocaleString('ru-RU',{day:'2-di
 function today0(){var d=new Date();d.setHours(0,0,0,0);return d;}
 function dayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function offToIso(off){var d=today0();d.setDate(d.getDate()+off);return iso(d);}
+function dateFromOff(off){var d=today0();d.setDate(d.getDate()+off);return d;}
+function offToIso(off){return iso(dateFromOff(off));}
 var MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 function fmt(d){return d.getDate()+' '+MON[d.getMonth()];}
 function greet(){var h=new Date().getHours();return h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';}
@@ -494,7 +508,7 @@ return h+'</div>';}
 function openChat(id){var c=clientById(id);if(!c)return;window._cid=id;clientTab('chat');}
 function openClient(id){var c=clientById(id);if(!c)return;window._cid=id;clientTab('profile');}
 function clientTab(t){var c=clientById(window._cid);if(!c)return;
-if(t==='chat'&&c.unread){c.unread=0;save();updateBell();}
+if(t==='chat'&&c.unread){c.unread=0;save();updateBell();renderNav();}
 var h='<div class="row" style="justify-content:space-between"><b style="font-size:18px;display:flex;align-items:center;gap:12px">'+avh(c)+esc(c.name)+'</b><button class="btn ghost sm" data-act="closemodal2">Закрыть</button></div><div class="tabbar">'+['profile|Профиль','quests|Квесты','meas|Замеры','chat|Чат'].map(function(x){var p=x.split('|');return '<button class="'+(t===p[0]?'on':'')+'" data-act="ctab" data-t="'+p[0]+'">'+p[1]+'</button>';}).join('')+'</div>';
 if(t==='profile'){var doneN=doneCount(c.id),lvl=Math.floor(c.xp/100)+1,rest=100-c.xp%100;
 h+='<div class="row" style="margin-top:12px;gap:8px">'
@@ -548,27 +562,61 @@ mset('<b style="font-size:17px">'+(isNew?'Новое упражнение':'Ре
 +'<label class="fl">Техника выполнения</label><textarea class="inp" id="et" style="min-height:60px">'+esc(x.t||'')+'</textarea>'
 +'<label class="fl">Ссылка на видео (YouTube)</label><input class="inp" id="ev" value="'+esc(x.v||'')+'" placeholder="https://youtu.be/…">'
 +'<div class="row" style="margin-top:14px"><button class="btn" data-act="exsave">Сохранить</button><button class="btn ghost sm" data-act="libback">← Назад</button></div>');}
-function rSchedule(){var h='<h1 class="title">Расписание</h1><div class="row" style="margin:18px 0 8px"><button class="btn" data-act="addsess">Занятие</button><button class="btn ghost" data-act="lib" data-f="">Библиотека</button></div><div class="list">';
-var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(s);});
-var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
-keys.forEach(function(off){var d=new Date(today0());d.setDate(d.getDate()+off);
-h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
-days[off].forEach(function(s){h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+esc(s.time)+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">'+(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
+
+/* ===== Расписание: календарь + список ===== */
+function sessCard(s){
+var h='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+esc(s.time)+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">'+(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
 if(s.ex){var lines=s.ex.split('\n').filter(function(x){return x.trim();});var L=exlibUse();
 h+='<div class="card" style="box-shadow:none;margin:8px 0;background:var(--bg)">'+lines.map(function(ln){var name=ln.split('—')[0].split('–')[0].trim();var idx=-1;for(var j=0;j<L.length;j++)if(L[j].n===name){idx=j;break;}
 if(idx>=0)return '<div class="exline" data-act="exinfo2" data-n="'+esc(name)+'"><span class="dot"></span>'+esc(ln)+'</div>';return '<div class="exline" style="cursor:default"><span class="dot" style="background:var(--line)"></span>'+esc(ln)+'</div>';}).join('')+'</div>';}
 h+='<div style="margin-top:6px">';
 s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;var isDone=(s.done||[]).indexOf(cid)>=0;
 h+='<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span style="display:flex;align-items:center;gap:12px">'+avh(cc,1)+' '+esc(cc.name)+'</span><div class="row">'+(isDone?'<span class="pill green">проведено</span>':'')+'<button class="tgl '+(isDone?'on':'')+'" data-act="assigntgl" data-s="'+s.id+'" data-c="'+cid+'"></button></div></div>';});
-h+='</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="assign" data-id="'+s.id+'">Назначить клиента</button><button class="btn ghost sm" data-act="editex" data-id="'+s.id+'">Комплекс</button><button class="btn ghost sm" data-act="edsess" data-id="'+s.id+'">Изменить</button><button class="btn ghost sm" data-act="dupsess" data-id="'+s.id+'">Дублировать</button><button class="btn ghost sm" data-act="delsess" data-id="'+s.id+'">Удалить</button></div></div>';});});
+h+='</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="assign" data-id="'+s.id+'">Назначить клиента</button><button class="btn ghost sm" data-act="editex" data-id="'+s.id+'">Комплекс</button><button class="btn ghost sm" data-act="edsess" data-id="'+s.id+'">Изменить</button><button class="btn ghost sm" data-act="dupsess" data-id="'+s.id+'">Дублировать</button><button class="btn ghost sm" data-act="delsess" data-id="'+s.id+'">Удалить</button></div></div>';
+return h;}
+function rSchedule(){
+if(S.calMode!=='list')return rCal();
+var h='<h1 class="title">Расписание</h1><div class="row" style="margin:18px 0 8px"><button class="btn" data-act="addsess">Занятие</button><button class="btn ghost" data-act="lib" data-f="">Библиотека</button></div><div class="tabbar"><button data-act="caltab" data-m="cal">Календарь</button><button class="on" data-act="caltab" data-m="list">Все дни</button></div><div class="list">';
+var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(s);});
+var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
+keys.forEach(function(off){var d=dateFromOff(off);
+h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
+days[off].forEach(function(s){h+=sessCard(s);});});
 return h+'</div>';}
-function sessForm(s){
+function rCal(){
+var sel=(S.calSel==null?0:+S.calSel);
+var base=today0();
+var cur=new Date(base.getFullYear(),base.getMonth()+(S.calM||0),1);
+var y=cur.getFullYear(),m=cur.getMonth();
+var label=cur.toLocaleString('ru-RU',{month:'long',year:'numeric'});
+var lead=(new Date(y,m,1).getDay()+6)%7;
+var dim=new Date(y,m+1,0).getDate();
+var h='<h1 class="title">Расписание</h1><div class="row" style="margin:18px 0 8px"><button class="btn" data-act="addsess">Занятие</button><button class="btn ghost" data-act="lib" data-f="">Библиотека</button></div><div class="tabbar"><button class="on" data-act="caltab" data-m="cal">Календарь</button><button data-act="caltab" data-m="list">Все дни</button></div>';
+h+='<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="btn ghost sm" data-act="calmv" data-d="-1">←</button><b style="text-transform:capitalize;font-size:16px">'+label+'</b><button class="btn ghost sm" data-act="calmv" data-d="1">→</button></div>';
+h+='<div class="cal">';
+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(function(w){h+='<div class="cw">'+w+'</div>';});
+for(var i=0;i<lead;i++)h+='<div></div>';
+for(var d=1;d<=dim;d++){
+var dt=new Date(y,m,d);
+var off=Math.round((dt-base)/86400000);
+var cnt=S.sessions.filter(function(s){return s.date===off;}).length;
+h+='<div class="cd'+(off===0?' today':'')+(off===sel?' sel':'')+'" data-act="calday" data-off="'+off+'">'+d+(cnt?'<span class="dot"></span>':'')+'</div>';
+}
+h+='</div><div class="row" style="margin-top:12px"><button class="btn ghost sm" data-act="calday" data-off="0">Сегодня</button><span style="font-size:12.5px;color:var(--tx2)">точка — в этот день есть занятия</span></div></div>';
+var dd=dateFromOff(sel);
+h+='<h2 class="sec">'+(sel===0?'Сегодня':sel===1?'Завтра':fmt(dd))+'</h2><div class="list">';
+var day=S.sessions.filter(function(s){return s.date===sel;}).sort(function(a,b){return a.time<b.time?-1:1;});
+if(!day.length)h+='<div class="empty">В этот день занятий нет</div>';
+day.forEach(function(s){h+=sessCard(s);});
+h+='</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="addsessday" data-iso="'+iso(dd)+'">Добавить на этот день</button></div>';
+return h;}
+function sessForm(s,preIso){
 var isNew=!s;var t=s?{title:s.title,type:s.type,time:s.time,iso:offToIso(s.date),ex:s.ex||'',who:s.who}:null;
 var h='<b style="font-size:17px">'+(isNew?'Новое занятие':'Редактирование занятия')+'</b>'
 +'<label class="fl">Название</label><input class="inp" id="st" value="'+esc(isNew?'Тренировка':t.title)+'">'
 +'<label class="fl">Тип</label><select class="inp" id="sty"><option value="indiv"'+(!isNew&&t.type==='indiv'?' selected':'')+'>Индивидуальное</option><option value="group"'+(!isNew&&t.type==='group'?' selected':'')+'>Групповое</option><option value="online"'+(!isNew&&t.type==='online'?' selected':'')+'>Онлайн</option></select>'
 +'<label class="fl">Время</label><input class="inp" id="stm" type="time" value="'+esc(isNew?'10:00':t.time)+'">'
-+'<label class="fl">Дата</label><input class="inp" id="sdd" type="date" value="'+esc(isNew?iso(today0()):t.iso)+'">'
++'<label class="fl">Дата</label><input class="inp" id="sdd" type="date" value="'+esc(isNew?(preIso||iso(today0())):t.iso)+'">'
 +'<label class="fl">Комплекс упражнений (каждое с новой строки)</label><textarea class="inp" id="sex" style="min-height:90px;resize:vertical" placeholder="Суставная разминка&#10;Приседания без веса&#10;Планка">'+esc(isNew?'':t.ex)+'</textarea><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="lib" data-f="new">Выбрать из библиотеки</button></div>'
 +'<label class="fl">Назначить клиентам</label>';
 S.clients.forEach(function(c){var chk=isNew?false:t.who.indexOf(c.id)>=0;
@@ -633,7 +681,11 @@ else if(act==='delquest'){var c4=clientById(window._cid);c4.quests.splice(+el.ge
 else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);if(!w)return;var d=new Date();c5.measures.push({d:d.getDate()+'.'+(d.getMonth()+1),w:w});save();clientTab('meas');toast('Замер добавлен');}
 else if(act==='sendmsg')sendMsg();
 else if(act==='addsess')sessForm(null);
+else if(act==='addsessday')sessForm(null,el.getAttribute('data-iso'));
 else if(act==='edsess'){var se=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(se)sessForm(se);}
+else if(act==='caltab'){S.calMode=el.getAttribute('data-m');save();render();}
+else if(act==='calmv'){S.calM=(S.calM||0)+ +el.getAttribute('data-d');save();render();}
+else if(act==='calday'){S.calSel=+el.getAttribute('data-off');save();render();}
 else if(act==='savesess'){var f=readSessForm();S.sessions.push({id:'s'+Date.now(),date:f.date,time:f.time,title:f.title,type:f.type,ex:f.ex,who:f.who,done:[]});save();closeModal();render();addLog('Создано занятие «'+f.title+'»');toast('Занятие создано');}
 else if(act==='savesessedit'){var se2=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(!se2)return;var f2=readSessForm();se2.date=f2.date;se2.time=f2.time;se2.title=f2.title;se2.type=f2.type;se2.ex=f2.ex;se2.who=f2.who;se2.done=(se2.done||[]).filter(function(cid){return f2.who.indexOf(cid)>=0;});save();closeModal();render();addLog('Занятие изменено · '+f2.title);toast('Занятие обновлено');}
 else if(act==='dupsess'){var sd=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(!sd)return;var cp=JSON.parse(JSON.stringify(sd));cp.id='s'+Date.now();cp.done=[];S.sessions.push(cp);save();render();addLog('Занятие продублировано · '+sd.title);toast('Копия создана');}
@@ -671,12 +723,9 @@ else if(act==='import')openImport();
 else if(act==='doimport')doImport();
 else if(act==='resetdemo'){S=demo();S.auth=true;normalize();save();renderNav();applyTheme();render();toast('Демо-данные восстановлены');}});
 function tryLogin(){var p=document.getElementById('pw');if(p.value==='1234'){S.auth=true;save();showChrome();addLog('Вход в кабинет тренера');}else toast('Неверный пароль');}
-function showChrome(){document.getElementById('burger').style.display='';document.getElementById('bellBtn').style.display='';document.getElementById('nav').style.display='flex';renderNav();render();}
+function showChrome(){document.body.classList.add('authed');document.getElementById('burger').style.display='';document.getElementById('bellBtn').style.display='';document.getElementById('nav').style.display='flex';renderNav();render();}
 function boot(){try{if(localStorage.getItem('fq_side')==='1'&&window.innerWidth>860)document.body.classList.add('sidehide');}catch(e){}
 tickDate();
 if(S.auth){showChrome();return;}
 document.getElementById('nav').style.display='none';
 document.getElementById('app').innerHTML='<div style="max-width:400px;margin:12vh auto"><div class="card" style="padding:34px 30px;text-align:center"><div style="display:flex;justify-content:center;background:linear-gradient(120deg,rgba(13,148,136,.12),rgba(20,184,166,.12));width:76px;height:76px;border-radius:24px;margin:0 auto 14px;align-items:center;color:var(--acc)">'+ico('dumbbell')+'</div><h1 style="font-size:22px;font-weight:800;margin:8px 0 4px">FitQuest</h1><p style="color:var(--tx2);font-size:14px;margin-bottom:16px">Кабинет тренера · демо-пароль: 1234</p><input class="inp" id="pw" type="password" placeholder="Пароль" onkeydown="if(event.key===&apos;Enter&apos;)tryLogin()"><button class="btn" style="width:100%;margin-top:14px;justify-content:center" onclick="tryLogin()">Войти</button></div></div>';}
-boot();
-</script>
-</body></html>
