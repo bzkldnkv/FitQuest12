@@ -111,7 +111,7 @@ function toast(m){var t=document.getElementById('toast');t.textContent=m;t.class
 function today0(){var d=new Date();d.setHours(0,0,0,0);return d;}
 function fmt(d){return d.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];}
 function monthName(i){return ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'][i];}
-var VIEW='dash',TABS={dash:'🏠|Дашборд',clients:'👥|Клиенты',schedule:',📅|Расписание'checks:'✅|Проверки',shop:'🎁|Лавка',settings:'⚙️|Настройки'};
+var VIEW='dash',TABS={dash:'🏠|Дашборд',clients:'👥|Клиенты',schedule:'📅|Расписание',checks:'✅|Проверки',shop:'🎁|Лавка',settings:'⚙️|Настройки'};
 function clientById(id){for(var i=0;i<S.clients.length;i++)if(S.clients[i].id===id)return S.clients[i];return null;}
 function ring(pct){pct=Math.max(0,Math.min(100,pct));var r=16,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 40 40"><defs><linearGradient id="grad"><stop offset="0%" stop-color="#5b5bf0"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs><circle class="bg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4"/><circle class="fg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4" stroke-dasharray="'+c+'" stroke-dashoffset="'+(c-c*pct/100)+'" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">'+pct+'%</text></svg>';}
 function applyTheme(){var t=S.theme;if(t==='auto'){t=(new Date().getHours()>=20||new Date().getHours()<8)?'dark':'light';}document.body.classList.toggle('dark',t==='dark');var b=document.getElementById('themeBtn');if(b)b.textContent=t==='dark'?'☀️':'🌙';}
@@ -121,7 +121,7 @@ function go(v){VIEW=v;renderNav();render();}
 function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';}
 function modal(html){document.getElementById('mcard').innerHTML=html;document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
-var checks=S.clients.filter(function(c){return c.report;}).length;
+function rDash(){var checks=S.clients.filter(function(c){return c.report;}).length;
 var risk=S.clients.filter(function(c){return c.lastActive>=7;});
 var top=S.clients.slice().sort(function(a,b){return b.xp-a.xp;}).slice(0,3);
 var h='<h1 class="title">Дашборд</h1><div class="bento">'
@@ -155,8 +155,8 @@ var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(
 var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
 keys.forEach(function(off){var d=new Date(today0());d.setDate(d.getDate()+off);
 h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
-days[off].forEach(function(s){h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+s.time+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
-s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;h+='<div class="row" style="justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><span>'+cc.emoji+' '+esc(cc.name)+'</span><div class="row"><span style="font-size:12px;color:var(--tx2)">'+(s.paid.indexOf(cid)>=0?</div></div>';});
+days[off].forEach(function(s){h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+s.time+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">'+(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
+s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;h+='<div class="row" style="justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><span>'+cc.emoji+' '+esc(cc.name)+'</span></div>';});
 h+='<button class="btn ghost sm" style="margin-top:8px" data-act="delsess" data-id="'+s.id+'">Удалить</button></div>';});});
 return h+'</div>';}
 function rChecks(){var h='<h1 class="title">Проверки</h1><div class="list">';var n=0;
