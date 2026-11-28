@@ -440,223 +440,175 @@
                 if(cnt) cal += '<span class="dot"></span>';
                 cal += '</div>';
             }
-            cal += '</div>';
-            cal += '<div class="row" style="margin-top:10px;justify-content:center;gap:10px">';
-            cal += '<button class="btn ghost" data-act="calday" data-off="0">Сегодня</button>';
-            cal += '<button class="btn ghost" data-act="calday" data-off="1">Завтра</button>';
-            cal += '</div>';
-            cal += '</div>';
+            cal += '</div></div>';
 
-            /* Список дня */
-            const daySessions = DB.sessions.filter(s => s.date === sel);
-            let list = '<div class="card" style="margin-top:16px">';
-            list += '<h2 class="sec">Занятия на ' + fmt(dateFromOff(sel)) + '</h2>';
-            if(daySessions.length === 0) {
-                list += '<div style="padding:20px;text-align:center;color:var(--c-text-sec)">Нет запланированных занятий</div>';
-            } else {
-                list += '<div class="list">';
-                daySessions.forEach(s => {
-                    const ex = DB.library.find(l => l.id === s.libId) || {name: 'Неизвестно'};
-                    list += '<div class="item">';
-                    list += '<div class="av" style="background:var(--c-primary)">' + ex.img + '</div>';
-                    list += '<div>';
-                    list += '<b>' + ex.name + '</b><br>';
-                    list += '<span style="color:var(--c-text-sec);font-size:13px">' + s.reps + ' повторов</span>';
-                    list += '</div>';
-                    list += '<div style="margin-left:auto;display:flex;gap:8px">';
-                    list += '<button class="btn sm ghost" style="padding:4px 8px" onclick="deleteSession('+s.id+')">✕</button>';
-                    list += '</div>';
-                    list += '</div>';
-                });
-                list += '</div>';
-            }
-            list += '</div>';
-
-            document.getElementById('app').innerHTML = cal + list;
-            bindEvents();
+            document.getElementById('app').innerHTML = cal;
+            attachEvents();
         }
 
-        // Рендер списка всех дней
+        // Рендер списка всех занятий
         function rList() {
-            const base = today0();
-            const groups = {};
-            DB.sessions.forEach(s => {
-                const d = dateFromOff(s.date);
-                const key = d.toDateString();
-                if(!groups[key]) groups[key] = ;
-                groups[key].push(s);
-            });
-
             let h = '<h1 class="title">Все тренировки</h1>';
             h += '<div class="row" style="margin:18px 0 8px">';
             h += '<button class="btn" data-act="addsess">+ Добавить занятие</button>';
-            h += '<button class="btn ghost" data-act="lib">Библиотека упражнений</button>';
-            h += '</div>';
-            
-            h += '<div class="tabbar">';
-            h += '<button data-act="caltab" data-m="cal">Календарь</button>';
-            h += '<button class="on" data-act="caltab" data-m="list">Все дни</button>';
+            h += '<button class="btn ghost" data-act="nav" data-to="trener">Назад к календарю</button>';
             h += '</div>';
 
-            h += '<div class="list">';
-            Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).forEach(key => {
-                const day = new Date(key);
-                const off = Math.round((day - base) / 86400000);
-                const ses = groups[key];
-                h += '<div class="card" style="margin-bottom:16px">';
-                h += '<h2 class="sec" style="margin:0 0 12px">' + fmt(day) + '</h2>';
-                ses.forEach(s => {
+            const byDay = {};
+            DB.sessions.forEach(s => {
+                if(!byDay[s.date]) byDay[s.date] = ;
+                byDay[s.date].push(s);
+            });
+
+            const days = Object.keys(byDay).sort((a,b) => b-a);
+            days.forEach(d => {
+                const dt = dateFromOff(+d);
+                h += '<div class="card"><h2 class="sec">' + fmt(dt) + '</h2><div class="list">';
+                byDay[d].forEach(s => {
                     const ex = DB.library.find(l => l.id === s.libId) || {name: 'Неизвестно'};
                     h += '<div class="item">';
                     h += '<div class="av" style="background:var(--c-primary)">' + ex.img + '</div>';
-                    h += '<div><b>' + ex.name + '</b><br><span style="color:var(--c-text-sec);font-size:13px">' + s.reps + ' повторов</span></div>';
-                    h += '<div style="margin-left:auto;display:flex;gap:8px"><button class="btn sm ghost" style="padding:4px 8px" onclick="deleteSession('+s.id+')">✕</button></div>';
+                    h += '<div><div style="font-weight:700">' + ex.name + '</div>';
+                    h += '<div style="color:var(--c-text-sec);font-size:13px">' + s.reps + ' повторов</div></div>';
+                    h += '<div style="margin-left:auto;color:var(--c-text-sec);font-size:13px">' + new Date(s.time).toLocaleTimeString(, {hour:'2-digit',minute:'2-digit'}) + '</div>';
                     h += '</div>';
                 });
-                h += '</div>';
+                h += '</div></div>';
             });
-            h += '</div>';
+
+            if(days.length === 0) h += '<div style="padding:40px;text-align:center;color:var(--c-text-sec)">Пока нет тренировок</div>';
 
             document.getElementById('app').innerHTML = h;
-            bindEvents();
+            attachEvents();
         }
 
         // Рендер библиотеки
         function rLib() {
             let h = '<h1 class="title">Библиотека упражнений</h1>';
             h += '<div class="row" style="margin:18px 0 8px">';
-            h += '<button class="btn ghost" data-act="back">← Назад</button>';
+            h += '<button class="btn ghost" data-act="nav" data-to="trener">Назад к календарю</button>';
             h += '</div>';
-            h += '<div class="card">';
-            h += '<h2 class="sec">Все упражнения</h2>';
             h += '<div class="lib-grid">';
-            DB.library.forEach(ex => {
-                h += '<div class="lib-item" onclick="selectLib('+ex.id+')">';
-                h += '<span style="font-size:24px;display:block;margin-bottom:8px">' + ex.img + '</span>';
-                h += '<span>' + ex.name + '</span>';
+            DB.library.forEach(l => {
+                h += '<div class="lib-item" data-id="' + l.id + '">';
+                h += '<span>' + l.img + '</span>';
+                h += '<span>' + l.name + '</span>';
                 h += '</div>';
             });
             h += '</div>';
-            h += '</div>';
             document.getElementById('app').innerHTML = h;
-            bindEvents();
+            attachEvents();
         }
 
         /* =========================================
-           ОБРАБОТЧИКИ СОБЫТИЙ
+           МОДАЛЬНЫЕ ОКНА И ДЕЙСТВИЯ
            ========================================= */
-        function bindEvents() {
-            document.querySelectorAll('[data-act]').forEach(el => {
-                el.addEventListener('click', e => {
-                    e.preventDefault();
-                    const act = el.getAttribute('data-act');
-                    if(act === 'nav') {
-                        nav(el.getAttribute('data-to'));
-                    } else if(act === 'addsess') {
-                        openModal();
-                    } else if(act === 'lib') {
-                        rLib();
-                    } else if(act === 'back') {
-                        rCal();
-                    } else if(act === 'calmv') {
-                        const d = parseInt(el.getAttribute('data-d'));
-                        DB.calM += d;
-                        rCal();
-                    } else if(act === 'calday') {
-                        DB.calSel = parseInt(el.getAttribute('data-off'));
-                        rCal();
-                    } else if(act === 'caltab') {
-                        const m = el.getAttribute('data-m');
-                        if(m === 'cal') rCal();
-                        else rList();
-                    }
-                });
-            });
-        }
-
-        function nav(page) {
-            document.querySelectorAll('.side .sbtn').forEach(b => b.classList.remove('on'));
-            document.querySelector('.side .sbtn[data-to="'+page+'"]').classList.add('on');
-            if(page === 'trener') rCal();
-            else {
-                document.getElementById('app').innerHTML = '<h1 class="title">Раздел "' + page + '" в разработке</h1>';
-            }
-        }
-
         function openModal() {
+            document.getElementById('modal').classList.add('open');
+            document.getElementById('scrim').style.display = 'block';
             const sel = document.getElementById('sessLib');
             sel.innerHTML = '';
-            DB.library.forEach(ex => {
-                sel.innerHTML += '<option value="'+ex.id+'">'+ex.name+'</option>';
+            DB.library.forEach(l => {
+                sel.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>';
             });
-            document.getElementById('modal').classList.add('open');
-            document.getElementById('sessReps').value = '';
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('open');
+            document.getElementById('scrim').style.display = 'none';
+            document.getElementById('sessReps').value = '';
         }
 
         function saveSession() {
-            const libId = parseInt(document.getElementById('sessLib').value);
-            const reps = parseInt(document.getElementById('sessReps').value);
-            if(!libId || !reps) {
-                toast('Выберите упражнение и укажите количество повторов');
-                return;
-            }
+            const libId = +document.getElementById('sessLib').value;
+            const reps = +document.getElementById('sessReps').value;
+            if(!libId || !reps) return toast('Заполните все поля');
+            
             const ex = DB.library.find(l => l.id === libId);
-            const newSess = {
+            DB.sessions.push({
                 id: Date.now(),
                 libId: libId,
                 name: ex.name,
                 reps: reps,
-                date: DB.calSel === null ? 0 : DB.calSel,
+                date: DB.calSel || 0,
                 time: Date.now()
-            };
-            DB.sessions.push(newSess);
+            });
+            toast('Занятие добавлено!');
             closeModal();
-            toast('Занятие добавлено');
             rCal();
         }
 
-        function deleteSession(id) {
-            if(!confirm('Удалить это занятие?')) return;
-            DB.sessions = DB.sessions.filter(s => s.id !== id);
-            rCal();
-            toast('Занятие удалено');
+        /* =========================================
+           НАВИГАЦИЯ И СОБЫТИЯ
+           ========================================= */
+        function nav(to) {
+            // Здесь можно добавить логику переключения вкладок (профиль, квесты и т.д.)
+            // Для простоты пока просто очищаем контент или показываем заглушку
+            if(to === 'trener') rCal();
+            else document.getElementById('app').innerHTML = '<h1 class="title">Раздел "' + to + '" в разработке</h1>';
         }
 
-        function selectLib(id) {
-            const item = document.querySelector(`.lib-item[onclick*="`+id+`"]`);
-            item.classList.toggle('selected');
-            toast('Упражнение выбрано (в демо-режиме пока ничего не делает)');
+        function calMv(d) {
+            DB.calM += +d;
+            rCal();
+        }
+
+        function calDay(off) {
+            DB.calSel = +off;
+            rCal();
+        }
+
+        function calTab(mode) {
+            if(mode === 'cal') rCal();
+            else rList();
+        }
+
+        function attachEvents() {
+            document.querySelectorAll('[data-act]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const act = e.target.getAttribute('data-act');
+                    const val = e.target.getAttribute('data-val');
+                    const to = e.target.getAttribute('data-to');
+                    const d = e.target.getAttribute('data-d');
+                    const off = e.target.getAttribute('data-off');
+                    
+                    if(act === 'nav') nav(to);
+                    if(act === 'addsess') openModal();
+                    if(act === 'lib') rLib();
+                    if(act === 'calmv') calMv(d);
+                    if(act === 'calday') calDay(off);
+                    if(act === 'caltab') calTab(val);
+                    if(act === 'logout') {
+                        localStorage.removeItem('fit_user');
+                        location.href = './index.html';
+                    }
+                });
+            });
+
+            // Обработка выбора упражнения в библиотеке
+            document.querySelectorAll('.lib-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const id = +el.getAttribute('data-id');
+                    const ex = DB.library.find(l => l.id === id);
+                    toast('Выбрано: ' + ex.name);
+                    // Можно добавить логику добавления в избранное или в тренировку
+                });
+            });
         }
 
         /* =========================================
            ИНИЦИАЛИЗАЦИЯ
            ========================================= */
         function init() {
-            // Инициализация бокового меню
-            document.querySelectorAll('.side .sbtn').forEach(b => {
-                b.addEventListener('click', e => {
-                    e.preventDefault();
-                    const to = b.getAttribute('data-to');
-                    nav(to);
-                });
-            });
+            // Проверка авторизации (заглушка)
+            const user = localStorage.getItem('fit_user') || JSON.stringify(DB.user);
+            localStorage.setItem('fit_user', user);
             
-            // Обработка выхода
-            document.querySelector('.side .sbtn[data-act="logout"]').addEventListener('click', () => {
-                if(confirm('Вы действительно хотите выйти?')) {
-                    alert('Выход выполнен (демо)');
-                }
-            });
-
-            // Запуск тренера по умолчанию
-            nav('trener');
+            // Запуск календаря
+            rCal();
         }
 
-        // Запуск при загрузке
+        // Запуск приложения
         init();
     </script>
 </body>
