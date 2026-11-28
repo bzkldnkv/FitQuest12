@@ -2,9 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FitQuest — Тренер</title>
-    <link rel="manifest" href='data:application/json,{"name":"FitQuest Тренер","short_name":"FitQuest","display":"standalone","start_url":"./trener.html","background_color":"%23f2f3f8","theme_color":"%230d9488"}'>
     <style>
         :root {
             --bg: #f2f3f8;
@@ -19,7 +18,7 @@
             --bad: #dc2626;
             --warn: #d97706;
             --rad: 20px;
-            --sh: 0 10px 30px rgba(23, 26, 38, 0.08), 0 2px 8px rgba(23, 26, 38, 0.05);
+            --sh: 0 10px 30px rgba(23, 26, 38, 0.08);
         }
         body.dark {
             --bg: #0d1020;
@@ -28,234 +27,163 @@
             --tx2: #9aa0bd;
             --line: #252a48;
             --card: #181c34;
-            --sh: 0 10px 30px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+            --sh: 0 10px 30px rgba(0, 0, 0, 0.45);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; }
         body {
-            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg);
             color: var(--tx);
-            -webkit-font-smoothing: antialiased;
-            position: relative;
             min-height: 100vh;
         }
-        body::before {
-            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            background: radial-gradient(600px 300px at 15% -5%, rgba(13, 148, 136, 0.16), transparent 60%),
-                        radial-gradient(500px 280px at 90% 10%, rgba(20, 184, 166, 0.12), transparent 60%),
-                        radial-gradient(700px 400px at 50% 110%, rgba(13, 148, 136, 0.10), transparent 60%);
-        }
-        main, header, nav { position: relative; z-index: 1; }
-        
         /* Header */
-        .hdr {
+        header {
             position: sticky; top: 0; z-index: 50;
-            background: color-mix(in srgb, var(--bg) 78%, transparent);
-            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            background: color-mix(in srgb, var(--bg) 80%, transparent);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--line);
-        }
-        .hdr-in {
-            max-width: 1120px; margin: 0 auto; padding: 14px 24px;
-            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 12px 20px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .logo {
-            font-size: 20px; font-weight: 800; letter-spacing: -0.3px;
+            font-weight: 800; letter-spacing: -0.5px;
             background: linear-gradient(90deg, var(--acc), var(--acc2));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
+            -webkit-background-clip: text; color: transparent;
         }
-        .ico { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+        .date-time { font-size: 13px; color: var(--tx2); font-weight: 600; }
         
         /* Sidebar */
-        .side {
-            position: fixed; top: 74px; bottom: 14px; left: 14px; width: 212px; z-index: 60;
-            display: flex; flex-direction: column; gap: 4px;
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--line); border-radius: 22px; padding: 14px 10px;
+        aside {
+            position: fixed; top: 70px; left: 20px; bottom: 20px; width: 220px;
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .nav-btn {
+            background: none; border: none; color: var(--tx2);
+            text-align: left; padding: 10px 12px; border-radius: 12px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-btn:hover { background: var(--line); color: var(--tx); }
+        .nav-btn.active { background: var(--acc); color: #fff; }
+        
+        /* Main Content */
+        main {
+            margin-left: 260px; margin-top: 30px; padding-bottom: 40px;
+            max-width: 1000px;
+        }
+        h1 { font-size: 24px; margin-bottom: 20px; }
+        
+        /* Пункт 3: Исправление скролл-контейнера */
+        .bento-container {
+            display: flex; overflow-x: auto; padding-bottom: 10px;
+            gap: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--line) transparent;
+        }
+        .bento-container::-webkit-scrollbar { height: 6px; }
+        .bento-container::-webkit-scrollbar-track { background: transparent; }
+        .bento-container::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+        
+        .tile {
+            min-width: 180px;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            box-shadow: var(--sh);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .tile-icon {
+            width: 32px; height: 32px;
+            background: rgba(13, 148, 136, 0.1);
+            color: var(--acc);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .tile-title { font-size: 13px; color: var(--tx2); text-transform: uppercase; letter-spacing: 0.5px; }
+        .tile-value { font-size: 24px; font-weight: 700; color: var(--tx); }
+        
+        /* Пункт 4: Расписание */
+        .schedule-card {
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            padding: 20px;
             box-shadow: var(--sh);
         }
-        .side .sbtn {
-            background: none; border: none; color: var(--tx2); font-size: 13.5px; font-weight: 700;
-            display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer;
-            border-radius: 14px; text-align: left; width: 100%; transition: color 0.2s, background 0.2s;
-        }
-        .side .sbtn:hover { color: var(--tx); }
-        .side .sbtn.on { color: #fff; background: linear-gradient(120deg, var(--acc), var(--acc2)); box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35); }
-        .side .sp { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
-        .side { transition: transform 0.3s ease; }
-        
-        main {
-            transition: padding-left 0.3s ease;
-            max-width: 1120px; margin: 0 auto; padding: 24px 24px 60px 258px;
-        }
-        
-        /* Burger & Scrim */
-        #burger { display: none; }
-        @media (min-width: 861px) {
-            #burger { display: inline-flex; }
-            body.sidehide .side { transform: translateX(calc(-100% - 20px)); }
-            body.sidehide main { padding-left: 24px; }
-        }
-        @media (max-width: 860px) {
-            .side { top: 74px; bottom: 14px; left: 14px; right: auto; width: 250px; flex-direction: column; padding: 14px 10px; justify-content: flex-start; transform: translateX(calc(-100% - 30px)); }
-            .side .sbtn { flex-direction: row; gap: 10px; font-size: 13.5px; padding: 11px 12px; width: 100%; white-space: normal; }
-            .side .sp { margin-top: auto; flex-direction: column; }
-            body.sideopen .side { transform: none; }
-            main { max-width: 100%; padding: 20px 16px 40px; }
-            #burger { display: inline-flex; }
-            #scrim.on { display: block; }
-        }
-        #scrim { position: fixed; inset: 0; background: rgba(10, 12, 24, 0.45); z-index: 55; display: none; }
-        
-        /* Typography */
-        h1.title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin: 4px 0 18px; }
-        h2.sec { font-size: 15px; font-weight: 700; color: var(--tx2); margin: 26px 0 12px; text-transform: uppercase; letter-spacing: 0.6px; }
-        
-        /* Cards & Tiles (Dynamic Grid) */
-        .card {
-            background: var(--card); border: 1px solid var(--line); border-radius: var(--rad);
-            box-shadow: var(--sh); padding: 18px; position: relative; overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover { transform: translateY(-2px); }
-        
-        /* Пункт 3: Исправление скролл-контейнера. Убрали "квадратность", сделали аккуратную обертку */
-        .bento-wrap {
-            display: flex; overflow-x: auto; padding-bottom: 10px;
-            scrollbar-width: thin; scrollbar-color: var(--line) transparent;
-            -webkit-overflow-scrolling: touch;
-            /* Важно: нет жесткой границы у самого контейнера, граница есть только у карточек */
-        }
-        .bento-wrap::-webkit-scrollbar { height: 6px; }
-        .bento-wrap::-webkit-scrollbar-track { background: transparent; }
-        .bento-wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
-        
-        .bento {
-            display: grid; grid-template-columns: repeat(4, minmax(190px, 1fr)); gap: 14px;
-            min-width: 100%;
-        }
-        
-        .tile { padding: 18px; position: relative; }
-        .tile::after {
-            content: ''; position: absolute; width: 120px; height: 120px; border-radius: 50%;
-            right: -40px; top: -40px; background: linear-gradient(135deg, rgba(13, 148, 136, 0.14), rgba(20, 184, 166, 0.05));
-        }
-        .tile .lbl { font-size: 13px; color: var(--tx2); font-weight: 600; }
-        .tile .val { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin-top: 6px; }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: linear-gradient(120deg, var(--acc), var(--acc2)); color: #fff;
-            border: none; border-radius: 14px; padding: 11px 18px; font-size: 14px; font-weight: 700;
-            cursor: pointer; box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .btn:active { transform: scale(0.97); }
-        .btn.ghost { background: var(--card); color: var(--tx); box-shadow: none; border: 1px solid var(--line); }
-        .btn.sm { padding: 7px 12px; font-size: 13px; border-radius: 11px; }
-        
-        /* Schedule List (Пункт 4: Регулируемый список) */
-        .schedule-list { display: flex; flex-direction: column; gap: 12px; }
         .schedule-item {
-            background: var(--card); border: 1px solid var(--line); border-radius: 16px;
-            padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
         }
-        .sched-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .sched-time { font-size: 18px; font-weight: 800; color: var(--acc); }
-        .sched-type { font-size: 12px; text-transform: uppercase; font-weight: 700; color: var(--tx2); padding: 4px 8px; border-radius: 99px; background: rgba(13, 148, 136, 0.08); }
-        .sched-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .schedule-item:last-child { border-bottom: none; }
+        .sched-header { display: flex; justify-content: space-between; align-items: center; }
+        .sched-time { font-size: 18px; font-weight: 700; color: var(--acc); }
+        .sched-type {
+            font-size: 11px; text-transform: uppercase;
+            background: rgba(13, 148, 136, 0.1);
+            color: var(--acc); padding: 4px 8px; border-radius: 20px;
+        }
+        .sched-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
         .sched-exercises { display: flex; flex-direction: column; gap: 4px; }
-        .sched-ex { font-size: 13px; color: var(--tx2); padding-left: 16px; position: relative; }
-        .sched-ex::before { content: '•'; color: var(--acc); position: absolute; left: 6px; }
-        
-        /* Modal & Toast */
-        .modal { position: fixed; inset: 0; z-index: 100; background: rgba(10, 12, 24, 0.55); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
-        @media (min-width: 700px) { .modal { align-items: center; } }
-        .modal.open { display: flex; }
-        .mcard {
-            background: var(--card); width: 100%; max-width: 560px; max-height: 88vh; overflow: auto;
-            border-radius: 24px 24px 0 0; padding: 22px; animation: up 0.25s ease;
-        }
-        @media (min-width: 700px) { .mcard { border-radius: 24px; animation: pop 0.2s ease; } }
-        @keyframes up { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
-        @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: none; opacity: 1; } }
-        .toast {
-            position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(20px);
-            background: var(--tx); color: var(--bg); padding: 11px 20px; border-radius: 999px;
-            font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none;
-            transition: 0.3s; z-index: 200; max-width: 90vw; text-align: center;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        
-        /* Utils */
-        .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .inp {
-            width: 100%; background: var(--bg2); border: 1.5px solid var(--line);
-            border-radius: 14px; padding: 12px 14px; font-size: 15px; color: var(--tx);
-            outline: none; transition: border 0.2s;
-        }
-        .inp:focus { border-color: var(--acc); }
-        label.fl { display: block; font-size: 13px; color: var(--tx2); font-weight: 600; margin: 12px 0 6px; }
-        .empty { text-align: center; color: var(--tx2); padding: 30px 10px; font-size: 14px; }
+        .sched-ex { font-size: 13px; color: var(--tx2); }
     </style>
 </head>
 <body>
-    <div id="errbox" class="errbox"></div>
-    <header class="hdr">
-        <div class="hdr-in">
-            <div class="hbtn" style="margin-left:0">
-                <button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0" aria-label="Меню">
-                    <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-                </button>
-            </div>
-            <div class="logo" style="margin-right:auto">FitQuest</div>
-            <!-- Пункт 2: Полные дата и время -->
-            <div class="hbtn"><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600"></span></div>
-        </div>
+
+    <header>
+        <div class="logo">FitQuest</div>
+        <!-- Пункт 2: Полные дата и время -->
+        <div class="date-time" id="datetime">Загрузка...</div>
     </header>
-    <nav class="side" id="nav"></nav>
-    <div id="scrim" data-act="scrim"></div>
-    <main id="app" class="fade"></main>
-    <div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard"></div></div>
-    <div class="toast" id="toast"></div>
+
+    <aside>
+        <button class="nav-btn active">Дашборд</button>
+        <button class="nav-btn">Клиенты</button>
+        <button class="nav-btn">Расписание</button>
+        <button class="nav-btn">Проверки</button>
+        <button class="nav-btn">Лавка</button>
+        <button class="nav-btn">Настройки</button>
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 10px 0;">
+        <button class="nav-btn" onclick="document.body.classList.toggle('dark')">Тема</button>
+    </aside>
+
+    <main>
+        <h1>Обзор</h1>
+        
+        <!-- Пункт 1 и 3: Динамические виджеты в скролл-контейнере -->
+        <div class="bento-container" id="dashboard"></div>
+
+        <div style="height: 20px;"></div>
+
+        <!-- Пункт 4: Регулируемое расписание -->
+        <div class="schedule-card">
+            <h2 style="margin-bottom: 15px;">Расписание на сегодня</h2>
+            <div id="schedule"></div>
+        </div>
+    </main>
 
     <script>
-        window.addEventListener('error', function(e) {
-            var b = document.getElementById('errbox');
-            b.style.display = 'block';
-            b.textContent = 'Ошибка скрипта: ' + e.message + ' (строка ' + e.lineno + ')';
-        });
-
-        var ICONS = {
-            dash: '<svg class="ico" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/></svg>',
-            users: '<svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 11a3 3 0 100-6"/><path d="M17.5 14.5c2 .8 3.5 2.9 3.5 5.5"/></svg>',
-            calendar: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>',
-            check: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>',
-            box: '<svg class="ico" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
-            gear: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2"/><circle cx="10" cy="16" r="2"/></svg>',
-            sun: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>',
-            moon: '<svg class="ico" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/></svg>',
-            dumbbell: '<svg class="ico" viewBox="0 0 24 24" style="width:46px;height:46px;stroke-width:1.5"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>'
-        };
-        function ico(n){return ICONS[n]||'';}
-        function ini(n){return n.split(/[\s-]+/).slice(0,2).map(function(w){return w?w.toUpperCase():''}).join('');}
+        // --- НАСТРОЙКИ (МЕНЯТЬ ЗДЕСЬ) ---
         
-        // Пункт 1: Динамические виджеты. 
-        // Чтобы добавить новый, просто скопируйте объект и поменяйте title/value/icon
-        var dashboardTiles = [
-            { title: "Клиенты", value: 124, icon: "users", color: "var(--acc)" },
-            { title: "Ждут проверки", value: 8, icon: "check", color: "var(--ok)" },
-            { title: "Отмены", value: 3, icon: "box", color: "var(--bad)" },
-            { title: "Выручка", value: "124 500 ₽", icon: "calendar", color: "var(--acc2)" },
-            { title: "Новые заявки", value: 15, icon: "dash", color: "var(--warn)" },
-            { title: "Активные абонементы", value: 89, icon: "gear", color: "var(--tx2)" }
+        // Пункт 1: Чтобы добавить виджет, просто скопируйте объект и поменяйте данные
+        const dashboardTiles = [
+            { title: "Клиенты", value: "124", icon: "👥" },
+            { title: "Ждут проверки", value: "8", icon: "✅" },
+            { title: "Отмены", value: "3", icon: "❌" },
+            { title: "Выручка", value: "124 500 ₽", icon: "💰" },
+            { title: "Новые заявки", value: "15", icon: "📩" },
+            { title: "Активные абонементы", value: "89", icon: "🎫" }
         ];
 
-        // Пункт 4: Регулируемое расписание. 
-        // Меняйте здесь данные, чтобы изменить список на экране.
-        var scheduleData = [
+        // Пункт 4: Чтобы изменить расписание, меняйте данные здесь
+        const scheduleData = [
             {
                 time: "10:00",
                 type: "Групповое",
@@ -282,121 +210,57 @@
             }
         ];
 
-        function renderDashboard() {
-            var app = document.getElementById('app');
-            app.innerHTML = '';
-            
-            // Блок виджетов
-            var bentoWrap = document.createElement('div');
-            bentoWrap.className = 'bento-wrap';
-            var bento = document.createElement('div');
-            bento.className = 'bento';
-            
-            dashboardTiles.forEach(function(tile) {
-                var t = document.createElement('div');
-                t.className = 'tile';
-                t.innerHTML = `
-                    <div style="position:relative;z-index:1">
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                            <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:${tile.color}">${ico(tile.icon)}</div>
-                            <div class="lbl">\${tile.title}</div>
-                        </div>
-                        <div class="val" style="color:${tile.color}">${tile.value}</div>
-                    </div>
-                `;
-                bento.appendChild(t);
-            });
-            bentoWrap.appendChild(bento);
-            
-            var card = document.createElement('div');
-            card.className = 'card';
-            card.appendChild(bentoWrap);
-            
-            app.appendChild(card);
+        // --- ЛОГИКА ---
 
-            // Блок расписания
-            var schedCard = document.createElement('div');
-            schedCard.className = 'card';
-            var schedTitle = document.createElement('h2');
-            schedTitle.className = 'title';
-            schedTitle.innerText = "Расписание на сегодня";
-            
-            var schedList = document.createElement('div');
-            schedList.className = 'schedule-list';
-            
-            scheduleData.forEach(function(item) {
-                var itemEl = document.createElement('div');
-                itemEl.className = 'schedule-item';
-                var exList = '';
-                item.exercises.forEach(function(ex) {
-                    exList += `<div class="sched-ex">\${ex}</div>`;
-                });
-                
-                itemEl.innerHTML = `
-                    <div class="sched-header">
-                        <div class="sched-time">\${item.time}</div>
-                        <div class="sched-type">\${item.type}</div>
-                    </div>
-                    <div class="sched-title">\${item.title}</div>
-                    <div class="sched-exercises">
-                        \${exList}
-                    </div>
-                `;
-                schedList.appendChild(itemEl);
-            });
-            
-            schedCard.appendChild(schedTitle);
-            schedCard.appendChild(schedList);
-            app.appendChild(schedCard);
-        }
-
-        function initSidebar() {
-            var nav = document.getElementById('nav');
-            var items = [
-                { name: "Дашборд", icon: "dash", active: true },
-                { name: "Клиенты", icon: "users", active: false },
-                { name: "Расписание", icon: "calendar", active: false },
-                { name: "Проверки", icon: "check", active: false },
-                { name: "Лавка", icon: "box", active: false },
-                { name: "Настройки", icon: "gear", active: false }
-            ];
-            items.forEach(function(i) {
-                var btn = document.createElement('button');
-                btn.className = 'sbtn ' + (i.active ? 'on' : '');
-                btn.innerHTML = `<div class="ic">${ico(i.icon)}</div><span>${i.name}</span>`;
-                nav.appendChild(btn);
-            });
-            var sp = document.createElement('div');
-            sp.className = 'sp';
-            var themeBtn = document.createElement('button');
-            themeBtn.className = 'sbtn';
-            themeBtn.innerHTML = `<div class="ic">\${ico('sun')}</div><span>Тема</span>`;
-            themeBtn.onclick = function() {
-                document.body.classList.toggle('dark');
+        // Пункт 2: Обновление даты и времени
+        function updateDateTime() {
+            const el = document.getElementById('datetime');
+            const now = new Date();
+            const options = { 
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
             };
-            sp.appendChild(themeBtn);
-            nav.appendChild(sp);
+            el.textContent = now.toLocaleString('ru-RU', options);
         }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
 
-        function updateDate() {
-            var d = new Date();
-            var opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById('hdrdate').innerText = d.toLocaleString('ru-RU', opts);
-        }
+        // Пункт 1: Рендер виджетов
+        const dashContainer = document.getElementById('dashboard');
+        dashboardTiles.forEach(tile => {
+            const div = document.createElement('div');
+            div.className = 'tile';
+            div.innerHTML = `
+                <div class="tile-icon">\${tile.icon}</div>
+                <div class="tile-title">\${tile.title}</div>
+                <div class="tile-value">\${tile.value}</div>
+            `;
+            dashContainer.appendChild(div);
+        });
 
-        // Event Listeners
-        document.getElementById('burger').addEventListener('click', function() {
-            document.body.classList.toggle('sidehide');
+        // Пункт 4: Рендер расписания
+        const schedContainer = document.getElementById('schedule');
+        scheduleData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'schedule-item';
+            
+            let exList = '';
+            item.exercises.forEach(ex => {
+                exList += `<div class="sched-ex">• \${ex}</div>`;
+            });
+
+            div.innerHTML = `
+                <div class="sched-header">
+                    <div class="sched-time">\${item.time}</div>
+                    <div class="sched-type">\${item.type}</div>
+                </div>
+                <div class="sched-title">\${item.title}</div>
+                <div class="sched-exercises">
+                    \${exList}
+                </div>
+            `;
+            schedContainer.appendChild(div);
         });
-        document.getElementById('scrim').addEventListener('click', function() {
-            document.body.classList.remove('sideopen');
-        });
-        
-        // Init
-        initSidebar();
-        renderDashboard();
-        updateDate();
-        setInterval(updateDate, 1000); // Обновляем каждую секунду для секунд
     </script>
 </body>
 </html>
