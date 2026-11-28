@@ -93,6 +93,17 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .chart{width:100%;height:120px}
 main{max-width:1120px;margin:0 auto;padding:24px 24px 60px 258px}
 @media(max-width:860px){main{max-width:100%;padding:20px 16px 150px}}
+#scrim{position:fixed;inset:0;background:rgba(10,12,24,.45);z-index:55;display:none}
+@media(max-width:860px){
+.side{top:74px;bottom:14px;left:14px;right:auto;width:250px;flex-direction:column;padding:14px 10px;justify-content:flex-start;transform:translateX(calc(-100% - 30px))}
+.side .sbtn{flex-direction:row;gap:10px;font-size:13.5px;padding:11px 12px;width:100%;white-space:normal}
+.side .sbtn .ic{font-size:18px}
+.side .sp{margin-top:auto;flex-direction:column}
+body.sideopen .side{transform:none}
+main{max-width:100%;padding:20px 16px 40px}
+#burger{display:inline-flex}
+#scrim.on{display:block}
+}
 </style></head>
 <body>
 <div id="errbox" class="errbox"></div>
@@ -101,6 +112,7 @@ main{max-width:1120px;margin:0 auto;padding:24px 24px 60px 258px}
 <div class="hbtn"><button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0">☰</button><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600"></span></div></div></header>
 <nav class="side" id="nav"></nav>
 <main id="app" class="fade"></main>
+<div id="scrim" data-act="scrim"></div>
 <div class="modal" id="modal" data-act="closemodal"><div class="mcard" id="mcard"></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -235,7 +247,7 @@ function setTheme(){S.theme=document.body.classList.contains('dark')?'light':'da
 function renderNav(){var n=document.getElementById('nav');var h='';for(var k in TABS){var p=TABS[k].split('|');h+='<button class="sbtn '+(VIEW===k?'on':'')+'" data-act="nav" data-v="'+k+'"><span class="ic">'+p[0]+'</span>'+p[1]+'</button>';}
 h+='<div class="sp"><button class="sbtn" data-act="theme"><span class="ic" id="themeBtn">🌙</span>Тема</button></div>';
 n.innerHTML=h;}
-function go(v){VIEW=v;renderNav();render();}
+function go(v){VIEW=v;document.body.classList.remove('sideopen');var s2=document.getElementById('scrim');if(s2)s2.classList.remove('on');renderNav();render();}
 function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';}
 function modal(html){document.getElementById('mcard').innerHTML=html;document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
@@ -330,7 +342,7 @@ return h+'</div>';}
 function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:15px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
 return h;}
 document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
-if(act==='nav')go(el.getAttribute('data-v'));else if(act==='burger'){document.body.classList.toggle('sidehide');try{localStorage.setItem('fq_side',document.body.classList.contains('sidehide')?'1':'0');}catch(e){}}
+if(act==='nav')go(el.getAttribute('data-v'));else if(act==='burger'){if(window.innerWidth<=860){document.body.classList.toggle('sideopen');var sc=document.getElementById('scrim');if(sc)sc.classList.toggle('on',document.body.classList.contains('sideopen'));}else{document.body.classList.toggle('sidehide');try{localStorage.setItem('fq_side',document.body.classList.contains('sidehide')?'1':'0');}catch(e){}}};else if(act==='scrim'){document.body.classList.remove('sideopen');var s1=document.getElementById('scrim');if(s1)s1.classList.remove('on');}
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();applyTheme();render();}
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
