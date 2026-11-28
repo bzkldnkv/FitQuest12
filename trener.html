@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>FitQuest — Тренер</title>
-<link rel="manifest" href='data:application/json,{"name":"FitQuest Тренер","short_name":"FitQuest","display":"standalone","start_url":"./trener.html","background_color":"%23f2f3f8","theme_color":"%235b5bf0"}'>
+<link rel="manifest" href='data:application/json,{"name":"FitQuest Тренер","short_name":"FitQuest","display":"standalone","start_url":"./trener.html","background_color":"%23f2f3f8","theme_color":"%230d9488"}'>
 <style>
 :root{--bg:#f2f3f8;--bg2:#ffffff;--tx:#171a26;--tx2:#6a7086;--line:#e6e8f0;--card:#ffffff;--acc:#0d9488;--acc2:#14b8a6;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--rad:20px;--sh:0 10px 30px rgba(23,26,38,.08),0 2px 8px rgba(23,26,38,.05)}
 body.dark{--bg:#0d1020;--bg2:#141830;--tx:#eef0fa;--tx2:#9aa0bd;--line:#252a48;--card:#181c34;--sh:0 10px 30px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3)}
@@ -34,14 +34,17 @@ body.sideopen .side{transform:none}
 main{max-width:100%;padding:20px 16px 40px}
 #burger{display:inline-flex}
 #scrim.on{display:block}
-.bento{grid-template-columns:1fr 1fr}
 }
 #scrim{position:fixed;inset:0;background:rgba(10,12,24,.45);z-index:55;display:none}
 h1.title{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 18px}
 h2.sec{font-size:15px;font-weight:700;color:var(--tx2);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.6px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--sh);padding:18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
 .card:hover{transform:translateY(-2px)}
-.bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.bento{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:14px;min-width:100%}
+.bento-wrap{display:flex;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;-webkit-overflow-scrolling:touch}
+.bento-wrap::-webkit-scrollbar{height:6px}
+.bento-wrap::-webkit-scrollbar-track{background:transparent}
+.bento-wrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
 .tile{padding:18px;position:relative}
 .tile::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-40px;top:-40px;background:linear-gradient(135deg,rgba(13,148,136,.14),rgba(20,184,166,.05))}
 .tile .lbl{font-size:13px;color:var(--tx2);font-weight:600}
@@ -101,6 +104,8 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .exline{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13.5px;color:var(--tx2);cursor:pointer;transition:color .15s}
 .exline:hover{color:var(--acc)}
 .exline .dot{width:6px;height:6px;border-radius:50%;background:linear-gradient(120deg,var(--acc),var(--acc2));flex-shrink:0}
+@media(max-width:860px){.bento{grid-template-columns:repeat(4,minmax(180px,1fr))}.bento.grid2{grid-template-columns:1fr 1fr}}
+@media(min-width:861px){.bento.grid2{grid-template-columns:repeat(4,1fr)}}
 </style></head>
 <body>
 <div id="errbox" class="errbox"></div>
@@ -265,21 +270,31 @@ function go(v){VIEW=v;closeDrawer();renderNav();render();}
 function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';}
 function modal(html){document.getElementById('mcard').innerHTML=html;document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
+var DTKEY='fitquest_dash_tiles';
+function dashTileDefs(){return [['clients','Клиенты'],['checks','Ждут проверки'],['done','Проведено сегодня'],['ex','Упражнений в базе']];}
+function dashHidden(){try{var r=JSON.parse(localStorage.getItem(DTKEY)||'[]');return Array.isArray(r)?r:[]}catch(e){return []}}
+function dashCfg(){var hidden=dashHidden();
+var h='<b style="font-size:17px">Настройка дашборда</b><p style="font-size:13.5px;color:var(--tx2);margin-top:6px">Снимите галочку, чтобы скрыть виджет. Видимыми оставьте хотя бы один.</p><div style="margin-top:12px">';
+dashTileDefs().forEach(function(t){h+='<label style="display:flex;align-items:center;gap:12px;padding:9px 0;font-size:15px;border-bottom:1px solid var(--line)"><input type="checkbox" data-tilek="'+t[0]+'" '+(hidden.indexOf(t[0])<0?'checked':'')+'> '+t[1]+'</label>';});
+h+='</div><div class="row" style="margin-top:16px"><button class="btn" data-act="dashsave">Сохранить</button><button class="btn ghost sm" data-act="dashreset">Показать все</button></div>';
+modal(h);}
 function rDash(){var checks=S.clients.filter(function(c){return c.report;}).length;
 var risk=S.clients.filter(function(c){return c.lastActive>=7;});
 var top=S.clients.slice().sort(function(a,b){return b.xp-a.xp;}).slice(0,3);
 var done=0,today=S.sessions.filter(function(s){return s.date===0;});
 today.forEach(function(s){(s.done||[]).forEach(function(){done++;});});
-var h='<h1 class="title">'+greet()+'!</h1><div class="bento">'
-+'<div class="card tile"><div class="lbl">Клиенты</div><div class="val">'+S.clients.length+'</div></div>'
-+'<div class="card tile"><div class="lbl">Ждут проверки</div><div class="val">'+checks+'</div></div>'
-+'<div class="card tile"><div class="lbl">Проведено сегодня</div><div class="val">'+done+'</div></div>'
-+'<div class="card tile"><div class="lbl">Упражнений в базе</div><div class="val">'+exlibUse().length+'</div></div>';
-h+='</div><h2 class="sec">Сегодня на тренировках</h2>';
+var hidden=dashHidden();
+var th='<div class="bento-wrap"><div class="bento">';
+var shown=0;
+[['clients','Клиенты',S.clients.length],['checks','Ждут проверки',checks],['done','Проведено сегодня',done],['ex','Упражнений в базе',exlibUse().length]].forEach(function(t){if(hidden.indexOf(t[0])>=0)return;shown++;th+='<div class="card tile" data-key="'+t[0]+'"><div class="lbl">'+t[1]+'</div><div class="val">'+t[2]+'</div></div>';});
+th+='</div></div>';
+if(!shown)th='<div class="card"><div class="empty">Все виджеты скрыты — нажмите «Настроить», чтобы вернуть</div></div>';
+var h='<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 class="title" style="margin:0">'+greet()+'!</h1><button class="btn ghost sm" data-act="dashcfg">Настроить</button></div>'+th;
+h+='<h2 class="sec">Сегодня на тренировках</h2>';
 if(!today.length)h+='<div class="card"><div class="empty">Сегодня занятий нет — можно отдохнуть или запланировать новое</div></div>';
 today.forEach(function(s){var names=s.who.map(function(cid){var c=clientById(cid);return c?c.name.split(' ')[0]:'';}).filter(Boolean).join(', ')||'—';
 h+='<div class="item" data-act="nav" data-v="schedule"><div style="flex:1;min-width:0"><b>'+esc(s.title)+'</b><div style="font-size:12.5px;color:var(--tx2);margin-top:2px">'+s.time+' · '+esc(names)+'</div></div><div class="row" style="gap:8px"><span class="pill blue">'+((s.done||[]).length)+'/'+s.who.length+'</span><span class="pill gray">'+(s.type==='group'?'группа':s.type==='indiv'?'индивид':'онлайн')+'</span></div></div>';});
-h+='<div class="bento" style="margin-top:14px"><div class="card" style="grid-column:1/-1"><b>Риск отвала</b>';
+h+='<div class="bento grid2" style="margin-top:14px"><div class="card" style="grid-column:1/-1"><b>Риск отвала</b>';
 if(!risk.length)h+='<div class="empty">Все клиенты на связи</div>';
 risk.forEach(function(c){h+='<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span style="display:flex;align-items:center;gap:12px">'+avh(c,1)+' <b>'+esc(c.name)+'</b></span><span class="cap down">▼ '+c.lastActive+' дн. тишины</span></div>';});
 h+='</div><div class="card" style="grid-column:1/-1"><b>Топ по XP</b>';
@@ -353,7 +368,7 @@ if(!S.rewards.length)h+='<div class="empty">Добавьте первые наг
 if(S.purchases.length){h+='<h2 class="sec">Заявки на покупку</h2>';
 S.purchases.forEach(function(p,i){var c=clientById(p.cid);h+='<div class="card"><div class="row" style="justify-content:space-between"><span>'+esc(c?c.name:'')+' → <b>'+esc(p.n)+'</b></span><button class="btn sm" data-act="okpurchase" data-i="'+i+'">Выдать</button></div></div>';});}
 return h+'</div>';}
-function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card" style="margin-top:18px"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:14px;padding:8px 16px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13.5px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
+function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card" style="margin-top:18px"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:14px;padding:8px 16px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13.5px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Дашборд</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Скрытые виджеты можно вернуть в любой момент — кнопкой «Показать все» в настройке дашборда.</p></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
 return h;}
 document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
 if(act==='nav')go(el.getAttribute('data-v'));
@@ -361,6 +376,9 @@ else if(act==='burger'){if(window.innerWidth<=860){document.body.classList.toggl
 else if(act==='scrim')closeDrawer();
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();renderNav();applyTheme();render();}
+else if(act==='dashcfg')dashCfg();
+else if(act==='dashsave'){var hid=[];document.querySelectorAll('#mcard input[data-tilek]').forEach(function(cb){if(!cb.checked)hid.push(cb.getAttribute('data-tilek'));});try{localStorage.setItem(DTKEY,JSON.stringify(hid));}catch(e2){}closeModal();render();toast('Дашборд обновлён');}
+else if(act==='dashreset'){try{localStorage.removeItem(DTKEY);}catch(e3){}closeModal();render();toast('Все виджеты возвращены');}
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
 else if(act==='libclose'){var ov=document.getElementById('libov');if(ov&&(e.target.id==='libov'||e.target.closest('button'))){ov.remove();window._libOpen=false;}}
 else if(act==='client')openClient(el.getAttribute('data-id'));
@@ -371,7 +389,7 @@ else if(act==='addquest'){var n=prompt('Название квеста:');if(!n)r
 else if(act==='delquest'){var c4=clientById(window._cid);c4.quests.splice(+el.getAttribute('data-i'),1);save();clientTab('quests');}
 else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);if(!w)return;var d=new Date();c5.measures.push({d:d.getDate()+'.'+(d.getMonth()+1),w:w});save();clientTab('meas');toast('Замер добавлен');}
 else if(act==='sendmsg')sendMsg();
-else if(act==='addclient'){var n=prompt('Имя клиента:');if(!n)return;var id='c'+Date.now();var cols=['#f59e0b','#3b82f6','#ec4899','#10b981','#14b8a6','#f97316'];S.clients.push({id:id,name:n,login:'user'+Math.floor(Math.random()*900+100),pass:'1234',c:cols[S.clients.length%cols.length],xp:0,streak:0,blockDay:0,blockLen:21,lastActive:0,notes:'',tags:[],quests:[],measures:[],chat:[],report:null});save();render();toast('Клиент создан');}
+else if(act==='addclient'){var n=prompt('Имя клиента:');if(!n)return;var id='c'+Date.now();var cols=['#f59e0b','#3b82f6','#ec4899','#14b8a6','#8b5cf6','#f97316'];S.clients.push({id:id,name:n,login:'user'+Math.floor(Math.random()*900+100),pass:'1234',c:cols[S.clients.length%cols.length],xp:0,streak:0,blockDay:0,blockLen:21,lastActive:0,notes:'',tags:[],quests:[],measures:[],chat:[],report:null});save();render();toast('Клиент создан');}
 else if(act==='addsess'){modal('<b style="font-size:17px">Новое занятие</b><label class="fl">Название</label><input class="inp" id="st" value="Тренировка"><label class="fl">Тип</label><select class="inp" id="sty"><option value="indiv">Индивидуальное</option><option value="group">Групповое</option><option value="online">Онлайн</option></select><label class="fl">Время</label><input class="inp" id="stm" value="10:00"><label class="fl">День (0 — сегодня)</label><input class="inp" id="sd" type="number" value="0"><label class="fl">Комплекс упражнений (каждое с новой строки)</label><textarea class="inp" id="sex" style="min-height:90px;resize:vertical" placeholder="Суставная разминка&#10;Приседания без веса&#10;Планка"></textarea><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="lib" data-f="new">Выбрать из библиотеки</button></div><label class="fl">Назначить клиентам</label>'+S.clients.map(function(c){return '<label style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px"><input type="checkbox" data-c="'+c.id+'"> '+esc(c.name)+'</label>';}).join('')+'<div class="row" style="margin-top:14px"><button class="btn" data-act="savesess">Создать</button></div>');}
 else if(act==='savesess'){var who=[];document.querySelectorAll('#mcard input[data-c]').forEach(function(cb){if(cb.checked)who.push(cb.getAttribute('data-c'));});S.sessions.push({id:'s'+Date.now(),date:+document.getElementById('sd').value||0,time:document.getElementById('stm').value||'10:00',title:document.getElementById('st').value||'Занятие',type:document.getElementById('sty').value,ex:document.getElementById('sex').value,who:who,done:[]});save();closeModal();render();toast('Занятие создано');}
 else if(act==='delsess'){S.sessions=S.sessions.filter(function(x){return x.id!==el.getAttribute('data-id');});save();render();}
