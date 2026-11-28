@@ -154,6 +154,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 </style></head>
 <body>
 <div id="errbox" class="errbox"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0d9488"/><stop offset="100%" stop-color="#14b8a6"/></linearGradient></defs></svg>
 <header class="hdr"><div class="hdr-in">
 <div class="hbtn" style="margin-left:0"><button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0" aria-label="Меню"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 <div class="logo" style="margin-right:auto">FitQuest</div>
@@ -180,7 +181,10 @@ dumbbell:'<svg class="ico" viewBox="0 0 24 24" style="width:46px;height:46px;str
 };
 function ico(n){return ICONS[n]||'';}
 function ini(n){return n.split(/[\s-]+/).slice(0,2).map(function(w){return w?w[0].toUpperCase():''}).join('');}
-function avh(c,s){return '<span class="av'+(s?' sm':'')+'" style="background:'+c.c+'">'+ini(c.name)+'</span>';}
+/* Цвет аватара — только из безопасной палитры hex */
+var PAL=/^#[0-9a-fA-F]{3,8}$/;
+function safeCol(c){return PAL.test(c&&c.c)?c.c:'#0d9488';}
+function avh(c,s){return '<span class="av'+(s?' sm':'')+'" style="background:'+safeCol(c)+'">'+ini(c.name)+'</span>';}
 /* Случайный код приглашения: буквы и цифры, без похожих символов */
 function genCode(){var abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<4;i++)s+=abc[Math.floor(Math.random()*abc.length)];return 'FIT-'+s;}
 var EXLIB=[
@@ -307,6 +311,8 @@ if(S.calOpen==null)S.calOpen=false;
 if(!S.invite)S.invite=genCode();
 if(!S.rewards)S.rewards=[];if(!S.purchases)S.purchases=[];
 S.clients.forEach(function(c){if(!c.lastApproved)c.lastApproved=null;if(!c.chat)c.chat=[];if(!c.tags)c.tags=[];if(c.unread==null)c.unread=0;});
+/* Миграция дат: старые смещения → абсолютные даты ISO */
+S.sessions.forEach(function(s){if(!s.iso){s.iso=iso(dateFromOff(+s.date||0));delete s.date;}});
 ensureEx();}
 function ensureEx(){if(!S.exlib||!S.exlib.length)S.exlib=EXLIB.slice();}
 normalize();
@@ -319,6 +325,8 @@ function dayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dateFromOff(off){var d=today0();d.setDate(d.getDate()+off);return d;}
 function offToIso(off){return iso(dateFromOff(off));}
+/* Смещение занятия от сегодняшнего дня (абсолютная дата → смещение) */
+function sessOff(s){if(!s.iso)return +s.date||0;return Math.round((new Date(s.iso+'T00:00:00')-today0())/86400000);}
 var MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 function fmt(d){return d.getDate()+' '+MON[d.getMonth()];}
 function greet(){var h=new Date().getHours();return h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';}
@@ -329,7 +337,7 @@ function closeDrawer(){document.body.classList.remove('sideopen');var s=document
 var VIEW='dash',TABS={dash:'dash|Дашборд',clients:'users|Клиенты',chats:'msg|Чаты',schedule:'calendar|Расписание',checks:'check|Проверки',shop:'box|Лавка',settings:'gear|Настройки'};
 function clientById(id){for(var i=0;i<S.clients.length;i++)if(S.clients[i].id===id)return S.clients[i];return null;}
 function doneCount(cid){return S.sessions.filter(function(s){return (s.done||[]).indexOf(cid)>=0;}).length;}
-function ring(pct){pct=Math.max(0,Math.min(100,pct));var r=16,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 40 40"><defs><linearGradient id="grad"><stop offset="0%" stop-color="#0d9488"/><stop offset="100%" stop-color="#14b8a6"/></linearGradient></defs><circle class="bg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4"/><circle class="fg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4" stroke-dasharray="'+c+'" stroke-dashoffset="'+(c-c*pct/100)+'" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">'+pct+'%</text></svg>';}
+function ring(pct){pct=Math.max(0,Math.min(100,pct));var r=16,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4"/><circle class="fg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4" stroke-dasharray="'+c+'" stroke-dashoffset="'+(c-c*pct/100)+'" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">'+pct+'%</text></svg>';}
 function applyTheme(){var t=S.theme;if(t==='auto'){t=(new Date().getHours()>=20||new Date().getHours()<8)?'dark':'light';}document.body.classList.toggle('dark',t==='dark');var b=document.getElementById('themeBtn');if(b)b.innerHTML=t==='dark'?ico('sun'):ico('moon');}
 function setTheme(){S.theme=document.body.classList.contains('dark')?'light':'dark';save();renderNav();applyTheme();}
 function unreadTotal(){var n=0;S.clients.forEach(function(c){n+=(c.unread||0);});return n;}
@@ -389,7 +397,7 @@ function srcList(){return [['clients','Клиенты'],['checks','Ждут пр
 function srcValue(k){
 if(k==='clients')return String(S.clients.length);
 if(k==='checks')return String(S.clients.filter(function(c){return c.report;}).length);
-if(k==='done'){var d=0;S.sessions.filter(function(s){return s.date===0;}).forEach(function(s){d+=(s.done||[]).length;});return String(d);}
+if(k==='done'){var d=0;S.sessions.filter(function(s){return sessOff(s)===0;}).forEach(function(s){d+=(s.done||[]).length;});return String(d);}
 if(k==='ex')return String(exlibUse().length);
 return '';}
 function srcName(k){var f=srcList().filter(function(x){return x[0]===k;});return f.length?f[1]:'';}
@@ -466,7 +474,7 @@ dsec=null;});});}}
 function rDash(){
 var risk=S.clients.filter(function(c){return c.lastActive>=7;});
 var top=S.clients.slice().sort(function(a,b){return b.xp-a.xp;}).slice(0,3);
-var today=S.sessions.filter(function(s){return s.date===0;});
+var today=S.sessions.filter(function(s){return sessOff(s)===0;}).sort(function(a,b){return a.time<b.time?-1:1;});
 var tilesHtml='',shown=0;
 orderedWidgets().forEach(function(w){if(hiddenKey(w.k))return;shown++;
 tilesHtml+='<div class="card tile" data-k="'+w.k+'"><div class="lbl">'+esc(w.n)+'</div><div class="val">'+esc(w.v)+'</div>'+(w.src?'<div class="src">'+esc(srcName(w.src))+'</div>':'')+'</div>';});
@@ -505,7 +513,7 @@ if(st==='xp')arr.sort(function(a,b){return b.xp-a.xp;});
 else if(st==='name')arr.sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
 else if(st==='risk')arr.sort(function(a,b){return b.lastActive-a.lastActive;});
 arr.forEach(function(c){var pct=Math.round(c.blockDay/c.blockLen*100);
-h+='<div class="item" data-act="client" data-id="'+c.id+'"><div class="av" style="background:'+c.c+'">'+ini(c.name)+'</div><div style="flex:1;min-width:0"><b>'+esc(c.name)+'</b><div style="font-size:12.5px;color:var(--tx2);margin-top:2px">'+Math.floor(c.xp/100+1)+' уровень · '+c.xp+' XP · серия '+c.streak+'</div></div><div class="row" style="gap:8px">'+(c.lastActive>=7?'<span class="pill red">риск</span>':'')+ring(pct)+'</div></div>';});
+h+='<div class="item" data-act="client" data-id="'+c.id+'"><div class="av" style="background:'+safeCol(c)+'">'+ini(c.name)+'</div><div style="flex:1;min-width:0"><b>'+esc(c.name)+'</b><div style="font-size:12.5px;color:var(--tx2);margin-top:2px">'+Math.floor(c.xp/100+1)+' уровень · '+c.xp+' XP · серия '+c.streak+'</div></div><div class="row" style="gap:8px">'+(c.lastActive>=7?'<span class="pill red">риск</span>':'')+ring(pct)+'</div></div>';});
 return h||'<div class="empty">Никого не нашлось</div>';}
 function rClients(){var h='<h1 class="title">Клиенты</h1><div class="row" style="margin:18px 0 14px"><input class="inp" id="cq" placeholder="Поиск по имени или тегу…" style="flex:1;min-width:180px" oninput="cSearch()"><select class="inp" id="csort" onchange="cSortChange()" style="width:auto;padding-right:34px"><option value="xp"'+(S.clientSort==='xp'?' selected':'')+'>По XP</option><option value="name"'+(S.clientSort==='name'?' selected':'')+'>По имени</option><option value="risk"'+(S.clientSort==='risk'?' selected':'')+'>По активности</option></select><button class="btn" data-act="addclient">Добавить</button></div><div class="list" id="clist">'+clientItems()+'</div>';
 return h;}
@@ -532,8 +540,10 @@ if(!S.clients.length)h+='<div class="empty">Клиентов пока нет —
 return h+'</div>';}
 function openChat(id){var c=clientById(id);if(!c)return;window._chatCid=id;
 if(c.unread){c.unread=0;save();updateBell();}
-go('chats');var b=document.getElementById('chatbox');if(b)b.scrollTop=b.scrollHeight;}
-function sendMsg(){var c=clientById(window._chatCid),el=document.getElementById('cmsg');if(!c||!el.value.trim())return;c.chat=(c.chat||[]);c.chat.push({who:'me',t:el.value.trim()});el.value='';save();render();var b=document.getElementById('chatbox');if(b)b.scrollTop=b.scrollHeight;}
+go('chats');var b=document.getElementById('chatbox');if(b)b.scrollTop=b.scrollHeight;
+var inp=document.getElementById('cmsg');if(inp)inp.focus();}
+function sendMsg(){var c=clientById(window._chatCid),el=document.getElementById('cmsg');if(!c||!el.value.trim())return;c.chat=(c.chat||[]);c.chat.push({who:'me',t:el.value.trim()});el.value='';save();render();var b=document.getElementById('chatbox');if(b)b.scrollTop=b.scrollHeight;
+var el2=document.getElementById('cmsg');if(el2)el2.focus();}
 function demoMsg(){var c=clientById(window._chatCid);if(!c)return;
 var msgs=['Хорошо, сделаю к завтрашнему дню','Сегодня потренировалась, всё по плану','А можно перенести занятие на вечер?','Спасибо за обратную связь!','Чувствую прогресс, продолжаем','Отправляю отчёт сегодня вечером'];
 var t=msgs[Math.floor(Math.random()*msgs.length)];
@@ -556,7 +566,7 @@ if(t==='quests'){c.quests.forEach(function(q,i){h+='<div class="card" style="mar
 if(t==='meas'){h+='<canvas class="chart" id="wchart"></canvas><div class="row" style="margin-top:10px"><input class="inp" id="mw" type="number" step="0.1" placeholder="Вес, кг" style="flex:1"><button class="btn sm" data-act="addmeas">Добавить</button></div>';}
 modal(h);if(t==='meas')drawChart(c);}
 function drawChart(c){var cv=document.getElementById('wchart');if(!cv)return;var d=c.measures;if(d.length<2){var g=cv.getContext('2d');g.font='13px sans-serif';g.fillStyle=getComputedStyle(document.body).getPropertyValue('--tx2');g.fillText('Добавьте минимум 2 замера',10,60);return;}
-var ws=d.map(function(m){return m.w;});var mn=Math.min.apply(null,ws)-1,mx=Math.max.apply(null,ws)+1;var g=cv.getContext('2d'),W=cv.width=cv.offsetWidth*2,H=cv.height=240;g.clearRect(0,0,W,H);var pts=d.map(function(m,i){return [40+i*(W-60)/(d.length-1),H-30-(m.w-mn)/(mx-mn)*(H-60)];});
+var ws=d.map(function(m){return m.w;});var mn=Math.min.apply(null,ws)-1,mx=Math.max.apply(null,ws)+1;var g=cv.getContext('2d'),W=cv.width=Math.max(320,cv.offsetWidth*2),H=cv.height=240;g.clearRect(0,0,W,H);var pts=d.map(function(m,i){return [40+i*(W-60)/(d.length-1),H-30-(m.w-mn)/(mx-mn)*(H-60)];});
 g.strokeStyle='#0d9488';g.lineWidth=5;g.lineJoin='round';g.lineCap='round';g.beginPath();pts.forEach(function(p,i){i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]);});g.stroke();
 pts.forEach(function(p){g.beginPath();g.arc(p[0],p[1],7,0,7);g.fillStyle='#14b8a6';g.fill();});}
 function exlibUse(){return S.exlib&&S.exlib.length?S.exlib:EXLIB;}
@@ -567,7 +577,9 @@ L.forEach(function(x,i){if(q&&x.n.toLowerCase().indexOf(q)<0&&x.m.toLowerCase().
 return h||'<div class="empty">Ничего не нашлось</div>';}
 function libChips(){var gs=libGroups(),g=window._lgroup||'';
 return '<div class="chips"><button class="chip '+(g?'':'on')+'" data-act="lgroup" data-g="">Все</button>'+gs.map(function(x){return '<button class="chip '+(g===x?'on':'')+'" data-act="lgroup" data-g="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>';}
-function openLib(){ensureEx();window._lq=window._lq||'';window._libOpen=true;var old=document.getElementById('libov');if(old)old.remove();var d=document.createElement('div');d.className='modal open';d.id='libov';d.style.zIndex='120';d.innerHTML='<div class="mcard"><div class="row" style="justify-content:space-between"><b style="font-size:17px">Библиотека упражнений</b><button class="btn ghost sm" data-act="libclose">Закрыть</button></div><div class="row" style="margin:12px 0"><input class="inp" id="lq" placeholder="Поиск: название или группа…" value="'+esc(window._lq)+'" oninput="libSearch()" style="flex:1"><button class="btn sm" data-act="exnew">Своё</button></div>'+libChips()+'<div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px"><button class="btn" data-act="libclose">Готово</button></div></div>';document.body.appendChild(d);}
+/* Единая разметка карточки библиотеки — используется и при открытии, и при смене группы */
+function libCard(){return '<div class="row" style="justify-content:space-between"><b style="font-size:17px">Библиотека упражнений</b><button class="btn ghost sm" data-act="libclose">Закрыть</button></div><div class="row" style="margin:12px 0"><input class="inp" id="lq" placeholder="Поиск: название или группа…" value="'+esc(window._lq||'')+'" oninput="libSearch()" style="flex:1"><button class="btn sm" data-act="exnew">Своё</button></div>'+libChips()+'<div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px"><button class="btn" data-act="libclose">Готово</button></div>';}
+function openLib(){ensureEx();window._lq=window._lq||'';window._libOpen=true;var old=document.getElementById('libov');if(old)old.remove();var d=document.createElement('div');d.className='modal open';d.id='libov';d.style.zIndex='120';d.setAttribute('data-act','libclose');d.innerHTML='<div class="mcard">'+libCard()+'</div>';document.body.appendChild(d);}
 function libSearch(){window._lq=document.getElementById('lq').value;document.getElementById('lbox').innerHTML=libList();}
 function mset(h){if(window._libOpen){var m=document.querySelector('#libov .mcard');if(m){m.innerHTML=h;return;}}modal(h);}
 function exInfo(i){window._ei=i;var x=exlibUse()[i];if(!x)return;var vh=vid(x.v);
@@ -601,11 +613,12 @@ if(S.calMode==='list')return rSchedList();
 return rCal();}
 function rSchedList(){
 var h='<h1 class="title">Расписание</h1><div class="row" style="margin:18px 0 8px"><button class="btn" data-act="addsess">Занятие</button><button class="btn ghost" data-act="lib" data-f="">Библиотека</button></div><div class="tabbar"><button data-act="caltab" data-m="cal">Календарь</button><button class="on" data-act="caltab" data-m="list">Все дни</button></div><div class="list">';
-var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(s);});
-var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
+var offs={};S.sessions.forEach(function(s){var o=sessOff(s);(offs[o]=offs[o]||[]).push(s);});
+var keys=Object.keys(offs).map(Number).sort(function(a,b){return a-b;});
+if(!keys.length)h+='<div class="empty">Занятий нет — нажмите «Занятие», чтобы создать первое</div>';
 keys.forEach(function(off){var d=dateFromOff(off);
 h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
-days[off].forEach(function(s){h+=sessCard(s);});});
+offs[off].sort(function(a,b){return a.time<b.time?-1:1;}).forEach(function(s){h+=sessCard(s);});});
 return h+'</div>';}
 function rCal(){
 var sel=(S.calSel==null?0:+S.calSel);
@@ -616,7 +629,7 @@ h+='<div class="daystrip" id="daystrip">';
 var WS=['вс','пн','вт','ср','чт','пт','сб'];
 for(var o=-14;o<=30;o++){
 var dt=dateFromOff(o);
-var cnt=S.sessions.filter(function(s){return s.date===o;}).length;
+var cnt=S.sessions.filter(function(s){return sessOff(s)===o;}).length;
 h+='<div class="sd'+(o===0?' today':'')+(o===sel?' sel':'')+'" data-act="calday" data-off="'+o+'"><span>'+dt.getDate()+'</span><small>'+WS[dt.getDay()]+'</small>'+(cnt?'<span class="dot"></span>':'')+'</div>';
 }
 h+='</div>';
@@ -633,20 +646,20 @@ for(var i=0;i<lead;i++)h+='<div></div>';
 for(var d=1;d<=dim;d++){
 var dt2=new Date(y,m,d);
 var off=Math.round((dt2-base)/86400000);
-var cnt2=S.sessions.filter(function(s){return s.date===off;}).length;
+var cnt2=S.sessions.filter(function(s){return sessOff(s)===off;}).length;
 h+='<div class="cd'+(off===0?' today':'')+(off===sel?' sel':'')+'" data-act="calday" data-off="'+off+'">'+d+(cnt2?'<span class="dot"></span>':'')+'</div>';
 }
 h+='</div><div style="font-size:12.5px;color:var(--tx2);margin-top:10px">точка — в этот день есть занятия</div></div></div>';
 var dd=dateFromOff(sel);
 h+='<div class="calrow"><div class="daycol"><h2 class="sec">'+(sel===0?'Сегодня':sel===1?'Завтра':fmt(dd))+'</h2><div class="list">';
-var day=S.sessions.filter(function(s){return s.date===sel;}).sort(function(a,b){return a.time<b.time?-1:1;});
+var day=S.sessions.filter(function(s){return sessOff(s)===sel;}).sort(function(a,b){return a.time<b.time?-1:1;});
 if(!day.length)h+='<div class="empty">В этот день занятий нет</div>';
 day.forEach(function(s){h+=sessCard(s);});
 h+='</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="addsessday" data-iso="'+iso(dd)+'">Добавить на этот день</button></div></div></div>';
 return h;}
 function centerStrip(){var st=document.getElementById('daystrip');if(!st)return;var el=st.querySelector('.sd.sel')||st.querySelector('.sd.today');if(!el)return;st.scrollLeft=el.offsetLeft-st.offsetLeft-(st.clientWidth-el.offsetWidth)/2;}
 function sessForm(s,preIso){
-var isNew=!s;var t=s?{title:s.title,type:s.type,time:s.time,iso:offToIso(s.date),ex:s.ex||'',who:s.who}:null;
+var isNew=!s;var t=s?{title:s.title,type:s.type,time:s.time,iso:s.iso||iso(today0()),ex:s.ex||'',who:s.who}:null;
 var h='<b style="font-size:17px">'+(isNew?'Новое занятие':'Редактирование занятия')+'</b>'
 +'<label class="fl">Название</label><input class="inp" id="st" value="'+esc(isNew?'Тренировка':t.title)+'">'
 +'<label class="fl">Тип</label><select class="inp" id="sty"><option value="indiv"'+(!isNew&&t.type==='indiv'?' selected':'')+'>Индивидуальное</option><option value="group"'+(!isNew&&t.type==='group'?' selected':'')+'>Групповое</option><option value="online"'+(!isNew&&t.type==='online'?' selected':'')+'>Онлайн</option></select>'
@@ -661,8 +674,7 @@ modal(h);}
 function readSessForm(){
 var who=[];document.querySelectorAll('#mcard input[data-c]').forEach(function(cb){if(cb.checked)who.push(cb.getAttribute('data-c'));});
 var dv=document.getElementById('sdd').value||iso(today0());
-var diff=Math.round((new Date(dv+'T00:00:00')-today0())/86400000);
-return {date:diff,time:document.getElementById('stm').value||'10:00',title:document.getElementById('st').value||'Занятие',type:document.getElementById('sty').value,ex:document.getElementById('sex').value,who:who};}
+return {iso:dv,time:document.getElementById('stm').value||'10:00',title:document.getElementById('st').value||'Занятие',type:document.getElementById('sty').value,ex:document.getElementById('sex').value,who:who};}
 function rChecks(){var h='<h1 class="title">Проверки</h1><div class="list" style="margin-top:18px">';var n=0;
 S.clients.forEach(function(c){if(!c.report)return;n++;h+='<div class="card"><div class="row" style="justify-content:space-between"><b style="display:flex;align-items:center;gap:12px">'+avh(c,1)+esc(c.name)+'</b><span class="pill gray">'+esc(c.report.date)+'</span></div><div style="margin:8px 0;font-size:14px"><span class="pill blue">'+esc(c.report.quest)+'</span></div><p style="font-size:14px;color:var(--tx2);line-height:1.5">'+esc(c.report.text)+'</p><div class="row" style="margin-top:12px"><button class="btn sm" data-act="approve" data-id="'+c.id+'">Засчитать · +50 XP</button><button class="btn sm danger" data-act="reject" data-id="'+c.id+'">Отклонить</button></div></div>';});
 if(!n)h+='<div class="empty">Все отчёты обработаны</div>';
@@ -701,7 +713,7 @@ else if(act==='addwidget')dashAddWidget();
 else if(act==='delwidget')dashDelWidget(el.getAttribute('data-id'));
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
 else if(act==='libclose'){var ov=document.getElementById('libov');if(ov&&(e.target.id==='libov'||e.target.closest('button'))){ov.remove();window._libOpen=false;}}
-else if(act==='lgroup'){window._lgroup=el.getAttribute('data-g')||'';var m=document.querySelector('#libov .mcard');var q=document.getElementById('lq');window._lq=q?q.value:'';m.innerHTML=m.innerHTML.replace(/<div class="chips">[\s\S]*?<\/div><div id="lbox">[\s\S]*<\/div><div class="row" style="margin-top:12px">/,libChips()+'<div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px">');}
+else if(act==='lgroup'){window._lgroup=el.getAttribute('data-g')||'';var qEl=document.getElementById('lq');if(qEl)window._lq=qEl.value;var m=document.querySelector('#libov .mcard');if(m){m.innerHTML=libCard();var nq=document.getElementById('lq');if(nq&&window._lq)nq.value=window._lq;}}
 else if(act==='client')openClient(el.getAttribute('data-id'));
 else if(act==='chatopen')openChat(el.getAttribute('data-id'));
 else if(act==='chatsback'){window._chatCid=null;render();}
@@ -714,7 +726,9 @@ else if(act==='saveclient'){var nn=document.getElementById('ncname').value.trim(
 else if(act==='addquest'){modal('<b style="font-size:17px">Новый квест</b><label class="fl">Название</label><input class="inp" id="nqname" placeholder="Блок «Спина и осанка»"><label class="fl">Сколько дней (цель)</label><input class="inp" id="nqt" type="number" value="21" min="1"><div class="row" style="margin-top:14px"><button class="btn" data-act="savequest">Добавить</button><button class="btn ghost sm" data-act="closemodal2">Отмена</button></div>');}
 else if(act==='savequest'){var qn=document.getElementById('nqname').value.trim();if(!qn){toast('Введите название');return;}var qt=parseInt(document.getElementById('nqt').value)||21;var cq=clientById(window._cid);cq.quests.push({n:qn,d:0,t:qt});save();addLog('Добавлен квест «'+qn+'» · '+cq.name);clientTab('quests');toast('Квест добавлен');}
 else if(act==='delquest'){var c4=clientById(window._cid);c4.quests.splice(+el.getAttribute('data-i'),1);save();clientTab('quests');}
-else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);if(!w)return;var d=new Date();c5.measures.push({d:d.getDate()+'.'+(d.getMonth()+1),w:w});save();clientTab('meas');toast('Замер добавлен');}
+else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);
+if(isNaN(w)||w<=0){toast('Введите корректный вес');return;}
+c5.measures.push({d:iso(new Date()),w:w});save();clientTab('meas');toast('Замер добавлен');}
 else if(act==='sendmsg')sendMsg();
 else if(act==='addsess')sessForm(null);
 else if(act==='addsessday')sessForm(null,el.getAttribute('data-iso'));
@@ -723,8 +737,8 @@ else if(act==='caltab'){S.calMode=el.getAttribute('data-m');save();render();}
 else if(act==='calmv'){S.calM=(S.calM||0)+ +el.getAttribute('data-d');save();render();}
 else if(act==='calday'){S.calSel=+el.getAttribute('data-off');save();render();}
 else if(act==='calfold'){S.calOpen=!S.calOpen;save();render();}
-else if(act==='savesess'){var f=readSessForm();S.sessions.push({id:'s'+Date.now(),date:f.date,time:f.time,title:f.title,type:f.type,ex:f.ex,who:f.who,done:[]});save();closeModal();render();addLog('Создано занятие «'+f.title+'»');toast('Занятие создано');}
-else if(act==='savesessedit'){var se2=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(!se2)return;var f2=readSessForm();se2.date=f2.date;se2.time=f2.time;se2.title=f2.title;se2.type=f2.type;se2.ex=f2.ex;se2.who=f2.who;se2.done=(se2.done||[]).filter(function(cid){return f2.who.indexOf(cid)>=0;});save();closeModal();render();addLog('Занятие изменено · '+f2.title);toast('Занятие обновлено');}
+else if(act==='savesess'){var f=readSessForm();S.sessions.push({id:'s'+Date.now(),iso:f.iso,time:f.time,title:f.title,type:f.type,ex:f.ex,who:f.who,done:[]});save();closeModal();render();addLog('Создано занятие «'+f.title+'»');toast('Занятие создано');}
+else if(act==='savesessedit'){var se2=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(!se2)return;var f2=readSessForm();se2.iso=f2.iso;se2.time=f2.time;se2.title=f2.title;se2.type=f2.type;se2.ex=f2.ex;se2.who=f2.who;se2.done=(se2.done||[]).filter(function(cid){return f2.who.indexOf(cid)>=0;});save();closeModal();render();addLog('Занятие изменено · '+f2.title);toast('Занятие обновлено');}
 else if(act==='dupsess'){var sd=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});if(!sd)return;var cp=JSON.parse(JSON.stringify(sd));cp.id='s'+Date.now();cp.done=[];S.sessions.push(cp);save();render();addLog('Занятие продублировано · '+sd.title);toast('Копия создана');}
 else if(act==='delsess'){if(!confirm('Удалить занятие?'))return;var sx=S.sessions.find(function(x){return x.id===el.getAttribute('data-id');});S.sessions=S.sessions.filter(function(x){return x.id!==el.getAttribute('data-id');});save();render();addLog('Занятие удалено · '+(sx?sx.title:''));}
 else if(act==='assigntgl'){var s2=S.sessions.find(function(x){return x.id===el.getAttribute('data-s');});if(!s2)return;var cid2=el.getAttribute('data-c');s2.done=s2.done||[];s2.who=s2.who||[];if(s2.who.indexOf(cid2)<0)s2.who.push(cid2);var k=s2.done.indexOf(cid2);if(k>=0){s2.done.splice(k,1);toast('Проведение снято');}else{s2.done.push(cid2);var cc2=clientById(cid2);addLog('Тренировка проведена · '+s2.title+' · '+(cc2?cc2.name:''));toast('Тренировка проведена');}save();render();}
@@ -755,7 +769,10 @@ else if(act==='savereward'){var rn=document.getElementById('nrn').value.trim();i
 else if(act==='delreward'){S.rewards.splice(+el.getAttribute('data-i'),1);save();render();}
 else if(act==='okpurchase'){S.purchases.splice(+el.getAttribute('data-i'),1);save();render();addLog('Награда выдана');toast('Награда выдана');}
 else if(act==='regencode'){S.invite=genCode();save();render();addLog('Код приглашения обновлён');toast('Новый код: '+S.invite);}
-else if(act==='copycode'){navigator.clipboard&&navigator.clipboard.writeText(S.invite);toast('Код скопирован');}
+else if(act==='copycode'){var ok=false;
+try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(S.invite);ok=true;}}catch(e){}
+if(!ok){var ta=document.createElement('textarea');ta.value=S.invite;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e2){}ta.remove();}
+toast('Код скопирован');}
 else if(act==='export')exportData();
 else if(act==='import')openImport();
 else if(act==='doimport')doImport();
@@ -766,7 +783,4 @@ function boot(){try{if(localStorage.getItem('fq_side')==='1'&&window.innerWidth>
 tickDate();
 if(S.auth){showChrome();return;}
 document.getElementById('nav').style.display='none';
-document.getElementById('app').innerHTML='<div style="max-width:400px;margin:12vh auto"><div class="card" style="padding:34px 30px;text-align:center"><div style="display:flex;justify-content:center;background:linear-gradient(120deg,rgba(13,148,136,.12),rgba(20,184,166,.12));width:76px;height:76px;border-radius:24px;margin:0 auto 14px;align-items:center;color:var(--acc)">'+ico('dumbbell')+'</div><h1 style="font-size:22px;font-weight:800;margin:8px 0 4px">FitQuest</h1><p style="color:var(--tx2);font-size:14px;margin-bottom:16px">Кабинет тренера · демо-пароль: 1234</p><input class="inp" id="pw" type="password" placeholder="Пароль" onkeydown="if(event.key===&apos;Enter&apos;)tryLogin()"><button class="btn" style="width:100%;margin-top:14px;justify-content:center" onclick="tryLogin()">Войти</button></div></div>';}
-boot();
-</script>
-</body></html>
+document.getElementById('app').innerHTML='<div style="max-width:400px;margin:12vh auto"><div class="card" style="padding:34px 30px;text-align:center"><div style="display:flex;justify-content:center;background:linear-gradient(120deg,rgba(13,148,136,.12),rgba(20,184,166,.12));width:76px;height:76px;border-radius:24px;margin:0 auto 14px;align-items:center;color:
