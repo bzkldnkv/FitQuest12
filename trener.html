@@ -324,7 +324,7 @@ return h+'</div>';}
 function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:15px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
 return h;}
 document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
-if(act==='nav')go(el.getAttribute('data-v'));
+if(act==='nav')go(el.getAttribute('data-v'));else if(act==='burger'){document.body.classList.toggle('sidehide');try{localStorage.setItem('fq_side',document.body.classList.contains('sidehide')?'1':'0');}catch(e){}}
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();applyTheme();render();}
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
@@ -364,7 +364,7 @@ else if(act==='okpurchase'){S.purchases.splice(+el.getAttribute('data-i'),1);sav
 else if(act==='copycode'){navigator.clipboard&&navigator.clipboard.writeText(S.invite);toast('Код скопирован');}
 else if(act==='resetdemo'){S=demo();S.auth=true;ensureEx();save();applyTheme();renderNav();render();toast('Демо-данные восстановлены');}});
 function tryLogin(){var p=document.getElementById('pw');if(p.value==='1234'){S.auth=true;save();renderNav();render();document.getElementById('nav').style.display='flex';}else toast('Неверный пароль');}
-function boot(){applyTheme();
+function boot(){applyTheme();try{if(localStorage.getItem('fq_side')==='1')document.body.classList.add('sidehide');}catch(e){}
 var hd=document.getElementById('hdrdate');if(hd)hd.textContent=fmt(new Date());
 if(S.auth){renderNav();render();return;}
 document.getElementById('nav').style.display='none';
