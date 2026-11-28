@@ -13,9 +13,9 @@
     .hdr-in{max-width:1120px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
     .logo{font-size:20px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
     .side{position:fixed;top:74px;bottom:14px;left:14px;width:212px;z-index:60;display:flex;flex-direction:column;gap:4px}
-    .side-btn{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;color:var(--tx2);background:var(--card);border:1px solid var(--line);transition:.2s}
-    .side-btn:hover,.side-btn.active{color:var(--tx);background:var(--bg2);border-color:var(--line)}
-    .side-btn.active{box-shadow:var(--sh)}
+    .side-btn{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;color:var(--tx2);background:var(--card);border:1px solid var(--line);transition:.2s;cursor:pointer}
+    .side-btn:hover{color:var(--tx);background:var(--bg2);border-color:var(--line)}
+    .side-btn.active{color:var(--tx);background:var(--bg2);border-color:var(--line);box-shadow:var(--sh)}
     .main{max-width:1120px;margin:24px auto;padding:0 16px;flex:1}
     .page{display:none;padding-bottom:32px}
     .page.active{display:block}
@@ -34,7 +34,6 @@
     .ico-btn{background:none;border:none;color:var(--tx2);cursor:pointer;padding:6px;display:flex;align-items:center;gap:6px}
     .ico-btn:hover{color:var(--tx)}
     .ico{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
-    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:700;color:#fff;background:var(--bad);box-shadow:0 2px 6px rgba(220,38,38,.4)}
   </style>
 </head>
 <body>
@@ -47,12 +46,12 @@
   </header>
 
   <nav class="side">
-    <button class="side-btn active" onclick="switchPage('dash')">Дашборд</button>
-    <button class="side-btn" onclick="switchPage('clients')">Клиенты</button>
-    <button class="side-btn" onclick="switchPage('schedule')">Расписание</button>
-    <button class="side-btn" onclick="switchPage('checks')">Проверки</button>
-    <button class="side-btn" onclick="switchPage('shop')">Лавка</button>
-    <button class="side-btn" onclick="switchPage('settings')">Настройки</button>
+    <button class="side-btn active" onclick="window.switchPage('dash')">Дашборд</button>
+    <button class="side-btn" onclick="window.switchPage('clients')">Клиенты</button>
+    <button class="side-btn" onclick="window.switchPage('schedule')">Расписание</button>
+    <button class="side-btn" onclick="window.switchPage('checks')">Проверки</button>
+    <button class="side-btn" onclick="window.switchPage('shop')">Лавка</button>
+    <button class="side-btn" onclick="window.switchPage('settings')">Настройки</button>
   </nav>
 
   <main class="main">
@@ -167,12 +166,26 @@
   </main>
 
   <script>
-    function switchPage(id) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      event.target.closest('.side-btn').classList.add('active');
-    }
+    window.switchPage = function(id) {
+      try {
+        // Скрываем все страницы
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        // Убираем активный класс у кнопок
+        document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+        // Показываем нужную страницу
+        const page = document.getElementById(id);
+        if (page) {
+          page.classList.add('active');
+        }
+        // Подсвечиваем нажатую кнопку
+        const btn = event ? event.target.closest('.side-btn') : null;
+        if (btn) {
+          btn.classList.add('active');
+        }
+      } catch (e) {
+        console.error('Ошибка при переключении страницы:', e);
+      }
+    };
   </script>
 </body>
 </html>
