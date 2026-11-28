@@ -23,8 +23,8 @@ main,header,nav{position:relative;z-index:1}
 .side .sp{margin-top:auto;display:flex;flex-direction:column;gap:4px}
 .side{transition:transform .3s ease}
 main{transition:padding-left .3s ease;max-width:1120px;margin:0 auto;padding:24px 24px 60px 258px}
-#burger{display:none}
-@media(min-width:861px){#burger{display:inline-flex}}
+#burger,#bellBtn{display:none}
+@media(min-width:861px){#burger,#bellBtn{display:inline-flex}}
 @media(min-width:861px){body.sidehide .side{transform:translateX(calc(-100% - 20px))}body.sidehide main{padding-left:24px}}
 @media(max-width:860px){
 .side{top:74px;bottom:14px;left:14px;right:auto;width:250px;flex-direction:column;padding:14px 10px;justify-content:flex-start;transform:translateX(calc(-100% - 30px))}
@@ -32,9 +32,11 @@ main{transition:padding-left .3s ease;max-width:1120px;margin:0 auto;padding:24p
 .side .sp{margin-top:auto;flex-direction:column}
 body.sideopen .side{transform:none}
 main{max-width:100%;padding:20px 16px 40px}
-#burger{display:inline-flex}
+#burger,#bellBtn{display:inline-flex}
 #scrim.on{display:block}
 }
+#bellBtn{position:relative;width:42px;justify-content:center;padding:11px 0}
+#nbadge{position:absolute;top:-6px;right:-6px;padding:1px 7px;font-size:11px;min-width:18px;text-align:center}
 #scrim{position:fixed;inset:0;background:rgba(10,12,24,.45);z-index:55;display:none}
 h1.title{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 18px}
 h2.sec{font-size:15px;font-weight:700;color:var(--tx2);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.6px}
@@ -105,6 +107,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .pill.green{background:rgba(22,163,74,.12);color:var(--ok)}
 .pill.blue{background:rgba(13,148,136,.12);color:var(--acc)}
 .pill.gray{background:var(--line);color:var(--tx2)}
+.pill.warn{background:rgba(217,119,6,.14);color:var(--warn)}
 .msg{max-width:75%;padding:10px 14px;border-radius:16px;font-size:14px;margin:4px 0}
 .msg.me{background:linear-gradient(120deg,var(--acc),var(--acc2));color:#fff;margin-left:auto;border-bottom-right-radius:5px}
 .msg.them{background:var(--bg2);border:1px solid var(--line);border-bottom-left-radius:5px}
@@ -116,13 +119,19 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .statbox{flex:1;min-width:70px;text-align:center;padding:12px 6px!important}
 .statbox b{font-size:20px;font-weight:800;display:block}
 .statbox span{font-size:11.5px;color:var(--tx2)}
+.nrow{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s}
+.nrow:hover{background:var(--bg2);margin:0 -10px;padding:12px 10px;border-radius:12px}
+.nrow .ntx{flex:1;min-width:0}
+.nrow .ntx b{font-size:14px;display:block}
+.nrow .ntx span{font-size:12px;color:var(--tx2)}
+.nrow.unread{border-left:3px solid var(--acc);padding-left:9px}
 </style></head>
 <body>
 <div id="errbox" class="errbox"></div>
 <header class="hdr"><div class="hdr-in">
-<div class="hbtn" style="margin-left:0"><button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0;display:none" aria-label="Меню"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="hbtn" style="margin-left:0"><button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0" aria-label="Меню"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 <div class="logo" style="margin-right:auto">FitQuest</div>
-<div class="hbtn"><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600;white-space:nowrap"></span></div>
+<div class="hbtn"><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600;white-space:nowrap"></span><button class="btn ghost sm" id="bellBtn" data-act="notifs" aria-label="Уведомления"><svg class="ico" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span id="nbadge" class="pill red"></span></button></div>
 </div></header>
 <nav class="side" id="nav"></nav>
 <div id="scrim" data-act="scrim"></div>
@@ -140,8 +149,8 @@ box:'<svg class="ico" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path
 gear:'<svg class="ico" viewBox="0 0 24 24"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2"/><circle cx="10" cy="16" r="2"/></svg>',
 sun:'<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>',
 moon:'<svg class="ico" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/></svg>',
-dumbbell:'<svg class="ico" viewBox="0 0 24 24" style="width:46px;height:46px;stroke-width:1.5"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>',
-clock:'<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+bell:'<svg class="ico" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>',
+dumbbell:'<svg class="ico" viewBox="0 0 24 24" style="width:46px;height:46px;stroke-width:1.5"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>'
 };
 function ico(n){return ICONS[n]||'';}
 function ini(n){return n.split(/[\s-]+/).slice(0,2).map(function(w){return w?w[0].toUpperCase():''}).join('');}
@@ -252,7 +261,7 @@ var EXLIB=[
 {n:'Мост пилатес',m:'Пилатес',d:'Ягодицы и подвижность позвоночника',t:'Позвонок за позвонком вверх и вниз',v:''}
 ];
 var KEY='fitquest_v3';
-function demo(){return{auth:false,theme:'light',invite:'FIT-7K2Q',widgets:[],dashOrder:[],secOrder:[],clientSort:'xp',log:[],
+function demo(){return{auth:false,theme:'light',invite:'FIT-7K2Q',widgets:[],dashOrder:[],secOrder:[],clientSort:'xp',log:[],notifs:[],
 clients:[
 {id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,lastActive:2,notes:'Любит утренние тренировки',tags:['пилатес','спина'],lastApproved:null,quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Готова к отчёту за завтра!'}],report:{quest:'Пилатес и укрепление спины',date:'сегодня',text:'Выполнила всю программу, спина не болит'}},
 {id:'c2',name:'Иван Петров',login:'ivan',pass:'1234',c:'#3b82f6',xp:150,streak:0,blockDay:2,blockLen:21,lastActive:7,notes:'Нужно вернуть к тренировкам',tags:['новичок'],lastApproved:null,quests:[{n:'Блок «База: всё тело»',d:2,t:21}],measures:[{d:'20.10',w:84.0},{d:'27.10',w:83.2}],chat:[],report:null}],
@@ -262,8 +271,10 @@ function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}c
 var S=load();
 function normalize(){
 if(!S.widgets)S.widgets=[];if(!S.dashHide)S.dashHide=[];if(!S.dashOrder)S.dashOrder=[];
-if(!S.secOrder)S.secOrder=[];if(!S.log)S.log=[];if(!S.clientSort)S.clientSort='xp';
+if(!S.secOrder)S.secOrder=[];if(!S.log)S.log=[];if(!S.notifs)S.notifs=[];
+if(!S.clientSort)S.clientSort='xp';
 if(!S.rewards)S.rewards=[];if(!S.purchases)S.purchases=[];
+S.clients.forEach(function(c){if(!c.lastApproved)c.lastApproved=null;if(!c.chat)c.chat=[];if(!c.tags)c.tags=[];});
 ensureEx();}
 function ensureEx(){if(!S.exlib||!S.exlib.length)S.exlib=EXLIB.slice();}
 normalize();
@@ -292,14 +303,51 @@ function renderNav(){var n=document.getElementById('nav');var h='';for(var k in 
 h+='<div class="sp"><button class="sbtn" data-act="theme"><span class="ic" id="themeBtn">'+ico('moon')+'</span>Тема</button></div>';
 n.innerHTML=h;applyTheme();}
 function go(v){VIEW=v;closeDrawer();renderNav();render();}
-function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';if(VIEW==='dash')bindDnD();}
+function render(){var a=document.getElementById('app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');var f={dash:rDash,clients:rClients,schedule:rSchedule,checks:rChecks,shop:rShop,settings:rSettings}[VIEW];a.innerHTML=f?f():'';syncNotifs();updateBell();if(VIEW==='dash')bindDnD();}
 function modal(html){document.getElementById('mcard').innerHTML=html;document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 function hiddenKey(k){return S.dashHide.indexOf(k)>=0;}
 function toggleHide(k){var i=S.dashHide.indexOf(k);if(i>=0)S.dashHide.splice(i,1);else S.dashHide.push(k);save();}
 
+/* ===== Уведомления =====
+   Автогенерируются из живых данных: отчёт на проверке, риск отвала, заявка в лавке.
+   Когда ситуация разрешилась — уведомление исчезает само. Ручные события можно добавить через pushNotif с kind='sys'. */
+function pushNotif(k,ref,text){
+if(S.notifs.some(function(n){return n.k===k&&n.ref===ref;}))return;
+S.notifs.unshift({id:'n'+Date.now()+Math.floor(Math.random()*99),k:k,ref:ref,n:text,
+d:new Date().toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),read:false});
+if(S.notifs.length>50)S.notifs=S.notifs.slice(0,50);}
+function syncNotifs(){
+S.notifs=S.notifs.filter(function(n){
+if(n.k==='check'){var c=clientById(n.ref);return c&&c.report;}
+if(n.k==='risk'){var c2=clientById(n.ref);return c2&&c2.lastActive>=7;}
+if(n.k==='shop'){return S.purchases.some(function(p){return (p.cid+'|'+p.n)===n.ref;});}
+return true;});
+S.clients.forEach(function(c){
+if(c.report)pushNotif('check',c.id,'Отчёт от '+c.name+': «'+c.report.quest+'» ждёт проверки');
+if(c.lastActive>=7)pushNotif('risk',c.id,c.name+' молчит '+c.lastActive+' дней — риск отвала');});
+S.purchases.forEach(function(p){pushNotif('shop',p.cid+'|'+p.n,'Заявка на награду: «'+p.n+'»');});
+save();}
+function unreadCount(){return S.notifs.filter(function(n){return !n.read;}).length;}
+function updateBell(){var b=document.getElementById('nbadge');if(!b)return;var u=unreadCount();
+b.textContent=u;b.style.display=u?'':'none';}
+function notifPill(k){return k==='check'?'<span class="pill blue">проверка</span>':k==='risk'?'<span class="pill red">риск</span>':k==='shop'?'<span class="pill warn">лавка</span>':'<span class="pill gray">система</span>';}
+function openNotifs(){
+var h='<div class="row" style="justify-content:space-between"><b style="font-size:17px">Уведомления</b><button class="btn ghost sm" data-act="closemodal2">Закрыть</button></div>';
+if(S.notifs.length){h+='<div class="row" style="margin:12px 0 4px"><button class="btn ghost sm" data-act="notifreadall">Прочитать все</button><button class="btn ghost sm" data-act="notifclear">Очистить</button></div>';}
+if(!S.notifs.length)h+='<div class="empty" style="margin-top:16px">Всё спокойно — уведомлений нет 🎉</div>';
+S.notifs.forEach(function(n){
+h+='<div class="nrow'+(n.read?'':' unread')+'" data-act="notifgo" data-id="'+n.id+'"><div class="ntx">'+notifPill(n.k)+'<b style="margin-top:6px">'+esc(n.n)+'</b><span>'+esc(n.d)+'</span></div><button class="btn ghost sm" data-act="notifdel" data-id="'+n.id+'" style="flex-shrink:0">✕</button></div>';});
+modal(h);}
+function notifAction(id){
+var n=S.notifs.filter(function(x){return x.id===id;})[0];if(!n)return;
+n.read=true;save();updateBell();
+if(n.k==='check'||n.k==='risk'){closeModal();openClient(n.ref);}
+else if(n.k==='shop'){closeModal();go('shop');}
+else{openNotifs();}}
+function clearNotifs(all){if(all)S.notifs=[];else S.notifs=S.notifs.filter(function(n){return n.read;});save();updateBell();openNotifs();}
+
 /* Источники данных: виджет может быть привязан к живой цифре или нести своё значение */
-function srcList(){return [['clients','Клиенты'],['checks','Ждут проверки'],['done','Проведено сегодня'],['ex','Упражнений в базы'],['ex','Упражнений в базе']];}
 function srcList(){return [['clients','Клиенты'],['checks','Ждут проверки'],['done','Проведено сегодня'],['ex','Упражнений в базе']];}
 function srcValue(k){
 if(k==='clients')return String(S.clients.length);
@@ -494,8 +542,7 @@ var h='<b style="font-size:17px">'+(isNew?'Новое занятие':'Реда�
 +'<label class="fl">Время</label><input class="inp" id="stm" type="time" value="'+esc(isNew?'10:00':t.time)+'">'
 +'<label class="fl">Дата</label><input class="inp" id="sdd" type="date" value="'+esc(isNew?iso(today0()):t.iso)+'">'
 +'<label class="fl">Комплекс упражнений (каждое с новой строки)</label><textarea class="inp" id="sex" style="min-height:90px;resize:vertical" placeholder="Суставная разминка&#10;Приседания без веса&#10;Планка">'+esc(isNew?'':t.ex)+'</textarea><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="lib" data-f="new">Выбрать из библиотеки</button></div>'
-+'<label class="fl">Назначить клиентам</label>'+(isNew?S.clients:[]).length||'';
-h+='<label class="fl">Назначить клиентам</label>';
++'<label class="fl">Назначить клиентам</label>';
 S.clients.forEach(function(c){var chk=isNew?false:t.who.indexOf(c.id)>=0;
 h+='<label style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px"><input type="checkbox" data-c="'+c.id+'" '+(chk?'checked':'')+'> '+esc(c.name)+'</label>';});
 h+='<div class="row" style="margin-top:14px"><button class="btn" data-act="'+(isNew?'savesess':'savesessedit')+'" data-id="'+(isNew?'':s.id)+'">Сохранить</button></div>';
@@ -515,7 +562,7 @@ if(!S.rewards.length)h+='<div class="empty">Добавьте первые наг
 if(S.purchases.length){h+='<h2 class="sec">Заявки на покупку</h2>';
 S.purchases.forEach(function(p,i){var c=clientById(p.cid);h+='<div class="card"><div class="row" style="justify-content:space-between"><span>'+esc(c?c.name:'')+' → <b>'+esc(p.n)+'</b></span><button class="btn sm" data-act="okpurchase" data-i="'+i+'">Выдать</button></div></div>';});}
 return h+'</div>';}
-function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card" style="margin-top:18px"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:14px;padding:8px 16px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13.5px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Дашборд</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Виджеты и блоки: порядок меняется перетаскиванием, состав — кнопкой «Настроить» на дашборде.</p><div class="row"><button class="btn ghost sm" data-act="dashcfg">Открыть настройку дашборда</button></div></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Резервные копии</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Экспорт сохраняет все данные в JSON-файл. Импорт заменяет текущие данные файлом из резервной копии.</p><div class="row"><button class="btn ghost sm" data-act="export">Экспорт</button><button class="btn ghost sm" data-act="import">Импорт</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
+function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card" style="margin-top:18px"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:14px;padding:8px 16px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13.5px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Уведомления</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Появляются сами: отчёт на проверке, клиент молчит 7+ дней, заявка на награду. Разрешившиеся уведомления исчезают автоматически. Всего в списке: '+S.notifs.length+', непрочитанных: '+unreadCount()+'.</p><div class="row"><button class="btn ghost sm" data-act="notifs">Открыть уведомления</button><button class="btn danger sm" data-act="notifclear">Очистить прочитанные</button></div></div><div class="card" style="margin-top:14px"><b>Дашборд</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Виджеты и блоки: порядок меняется перетаскиванием, состав — кнопкой «Настроить» на дашборде.</p><div class="row"><button class="btn ghost sm" data-act="dashcfg">Открыть настройку дашборда</button></div></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Резервные копии</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Экспорт сохраняет все данные в JSON-файл. Импорт заменяет текущие данные файлом из резервной копии.</p><div class="row"><button class="btn ghost sm" data-act="export">Экспорт</button><button class="btn ghost sm" data-act="import">Импорт</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13.5px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
 return h;}
 function exportData(){var blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
 var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fitquest_backup_'+iso(new Date())+'.json';a.click();
@@ -531,6 +578,11 @@ else if(act==='burger'){if(window.innerWidth<=860){document.body.classList.toggl
 else if(act==='scrim')closeDrawer();
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();renderNav();applyTheme();render();}
+else if(act==='notifs')openNotifs();
+else if(act==='notifgo')notifAction(el.getAttribute('data-id'));
+else if(act==='notifreadall'){S.notifs.forEach(function(n){n.read=true;});save();updateBell();openNotifs();}
+else if(act==='notifdel'){S.notifs=S.notifs.filter(function(n){return n.id!==el.getAttribute('data-id');});save();updateBell();openNotifs();}
+else if(act==='notifclear'){clearNotifs(false);}
 else if(act==='dashcfg')dashCfg();
 else if(act==='dashsave')dashSaveCfg();
 else if(act==='dashreset'){S.dashHide=[];save();closeModal();render();toast('Все виджеты и блоки возвращены');}
@@ -538,7 +590,7 @@ else if(act==='addwidget')dashAddWidget();
 else if(act==='delwidget')dashDelWidget(el.getAttribute('data-id'));
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
 else if(act==='libclose'){var ov=document.getElementById('libov');if(ov&&(e.target.id==='libov'||e.target.closest('button'))){ov.remove();window._libOpen=false;}}
-else if(act==='lgroup'){window._lgroup=el.getAttribute('data-g')||'';document.querySelector('#libov .mcard').innerHTML=document.querySelector('#libov .mcard').innerHTML.replace(/<div class="chips">[\s\S]*?<\/div><div id="lbox">/,'');var m=document.querySelector('#libov .mcard');var q=document.getElementById('lq');window._lq=q?q.value:'';m.innerHTML=m.innerHTML.replace(/<div id="lbox">[\s\S]*<\/div><div class="row" style="margin-top:12px">/,libChips()+'<div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px">');}
+else if(act==='lgroup'){window._lgroup=el.getAttribute('data-g')||'';var m=document.querySelector('#libov .mcard');var q=document.getElementById('lq');window._lq=q?q.value:'';m.innerHTML=m.innerHTML.replace(/<div class="chips">[\s\S]*?<\/div><div id="lbox">[\s\S]*<\/div><div class="row" style="margin-top:12px">/,libChips()+'<div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px">');}
 else if(act==='client')openClient(el.getAttribute('data-id'));
 else if(act==='ctab')clientTab(el.getAttribute('data-t'));
 else if(act==='cnotesSave'){var c=clientById(window._cid);c.notes=document.getElementById('cnotes').textContent;c.tags=document.getElementById('ctags').value.split(',').map(function(s){return s.trim();}).filter(Boolean);save();addLog('Профиль обновлён · '+c.name);toast('Сохранено');}
@@ -589,12 +641,12 @@ else if(act==='import')openImport();
 else if(act==='doimport')doImport();
 else if(act==='resetdemo'){S=demo();S.auth=true;normalize();save();renderNav();applyTheme();render();toast('Демо-данные восстановлены');}});
 function tryLogin(){var p=document.getElementById('pw');if(p.value==='1234'){S.auth=true;save();showChrome();addLog('Вход в кабинет тренера');}else toast('Неверный пароль');}
-function showChrome(){document.getElementById('burger').style.display='';renderNav();render();}
+function showChrome(){document.getElementById('burger').style.display='';document.getElementById('bellBtn').style.display='';document.getElementById('nav').style.display='flex';renderNav();render();}
 function boot(){try{if(localStorage.getItem('fq_side')==='1'&&window.innerWidth>860)document.body.classList.add('sidehide');}catch(e){}
 tickDate();
 if(S.auth){showChrome();return;}
 document.getElementById('nav').style.display='none';
-document.getElementById('app').innerHTML='<div style="max-width:400px;margin:12vh auto"><div class="card" style="padding:34px 30px;text-align:center"><div style="display:flex;justify-content:center;background:linear-gradient(120deg,rgba(13,148,136,.12),rgba(20,184,166,.12));width:76px;height:76px;border-radius:24px;margin:0 auto 14px;align-items:center;color:var(--acc)">'+ico('dumbbell')+'</div><h1 style="font-size:22px;font-weight:800;margin:8px 0 4px">FitQuest</h1><p style="color:var(--tx2);font-size:14px;margin-bottom:16px">Кабинет тренера · демо-пароль: 1234</p><input class="inp" id="pw" type="password" placeholder="Пароль" onkeydown="if(event.key===&apos;Enter&apos;)tryLogin()"><button class="btn" style="width:100%;margin-top:14px;justify-content:center" data-act="login2" onclick="tryLogin()">Войти</button></div></div>';}
+document.getElementById('app').innerHTML='<div style="max-width:400px;margin:12vh auto"><div class="card" style="padding:34px 30px;text-align:center"><div style="display:flex;justify-content:center;background:linear-gradient(120deg,rgba(13,148,136,.12),rgba(20,184,166,.12));width:76px;height:76px;border-radius:24px;margin:0 auto 14px;align-items:center;color:var(--acc)">'+ico('dumbbell')+'</div><h1 style="font-size:22px;font-weight:800;margin:8px 0 4px">FitQuest</h1><p style="color:var(--tx2);font-size:14px;margin-bottom:16px">Кабинет тренера · демо-пароль: 1234</p><input class="inp" id="pw" type="password" placeholder="Пароль" onkeydown="if(event.key===&apos;Enter&apos;)tryLogin()"><button class="btn" style="width:100%;margin-top:14px;justify-content:center" onclick="tryLogin()">Войти</button></div></div>';}
 boot();
 </script>
 </body></html>
