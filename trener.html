@@ -22,7 +22,7 @@ main,header,nav{position:relative;z-index:1}
 main{transition:padding-left .3s ease}
 #burger{display:none}
 @media(min-width:861px){#burger{display:inline-flex}}
-@media(min-width:861px){body.sidehide .side{transform:translateX(calc(-100% - 20px))}body.sidehide main{padding-left:24px}};display:flex;flex-direction:column;gap:4px}
+@media(min-width:861px){body.sidehide.side{transform:translateX(calc(-100% - 20px))}body.sidehide main{padding-left:24px}};display:flex;flex-direction:column;gap:4px}
 main{max-width:1120px;margin:0 auto;padding:24px 24px 60px 258px}
 @media(max-width:860px){.side{top:auto;bottom:10px;left:10px;right:10px;width:auto;flex-direction:row;padding:6px;justify-content:space-around;overflow-x:auto}.side .sbtn{flex-direction:column;gap:3px;font-size:9.5px;padding:7px 4px;flex:1;align-items:center;white-space:nowrap}.side .sp{margin:0;flex-direction:row}.side .sbtn .ic{font-size:17px}main{padding:20px 16px 150px}}
 h1.title{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 18px}
@@ -91,7 +91,7 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 <div id="errbox" class="errbox"></div>
 <header class="hdr"><div class="hdr-in">
 <div class="logo">Fit<span style="font-weight:400">Quest</span></div>
-<div class="hbtn"><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600"></span></div>
+<div class="hbtn"><button class="btn ghost sm" id="burger" data-act="burger" style="width:42px;justify-content:center;padding:11px 0">☰</button><span id="hdrdate" style="font-size:13px;color:var(--tx2);font-weight:600"></span></div>style="font-size:13px;color:var(--tx2);font-weight:600"></span></div>
 </div></header>
 <nav class="side" id="nav"></nav>
 <main id="app" class="fade"></main>
