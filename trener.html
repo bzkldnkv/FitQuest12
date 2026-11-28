@@ -25,9 +25,6 @@ h2.sec{font-size:15px;font-weight:700;color:var(--tx2);margin:26px 0 12px;text-t
 .tile::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-40px;top:-40px;background:linear-gradient(135deg,rgba(91,91,240,.14),rgba(139,92,246,.05))}
 .tile .lbl{font-size:13px;color:var(--tx2);font-weight:600}
 .tile .val{font-size:30px;font-weight:800;letter-spacing:-1px;margin-top:6px}
-.tile.hero{grid-column:1/-1;background:linear-gradient(120deg,#5b5bf0,#8b5cf6);color:#fff;border:none}
-.tile.hero::after{background:rgba(255,255,255,.14)}
-.tile.hero .lbl{color:rgba(255,255,255,.8)}
 .cap{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;margin-top:8px}
 .cap.up{background:rgba(22,163,74,.12);color:var(--ok)}
 .cap.down{background:rgba(220,38,38,.12);color:var(--bad)}
@@ -64,8 +61,8 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 .errbox{display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#dc2626;color:#fff;padding:12px 16px;font:13px/1.4 monospace;white-space:pre-wrap}
 .fade{animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.bars .b{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2));margin-top:6px;transition:width .5s}
 .track{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bars{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .5s}
 .tgl{position:relative;width:46px;height:26px;border-radius:99px;background:var(--line);cursor:pointer;transition:.2s;flex-shrink:0;border:none}
 .tgl::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .tgl.on{background:var(--ok)}
@@ -96,21 +93,127 @@ label.fl{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin:12
 <div class="toast" id="toast"></div>
 <script>
 window.addEventListener('error',function(e){var b=document.getElementById('errbox');b.style.display='block';b.textContent='Ошибка скрипта: '+e.message+' (строка '+e.lineno+')';});
+var EXLIB=[
+{n:'Приседания со штангой',m:'Ноги',d:'База для ног и ягодиц, укрепляет всё тело',t:'Спина прямая, колени по линии стоп, таз до параллели',v:''},
+{n:'Приседания гоблет',m:'Ноги',d:'Присед с гантелью у груди: ноги, кор, осанка',t:'Гантель у груди, спина прямая, колени не заваливаются внутрь',v:''},
+{n:'Приседания без веса',m:'Ноги',d:'Базовый присед для разминки и новичков',t:'Стопы на ширине плеч, таз назад, спина ровная',v:''},
+{n:'Жим ногами',m:'Ноги',d:'Нагрузка на бёдра и ягодицы без осевой нагрузки',t:'Спина прижата к спинке, колени не блокируются вверху',v:''},
+{n:'Выпады с гантелями',m:'Ноги',d:'Квадрицепс, ягодицы и баланс',t:'Шаг вперёд, колено задней ноги к полу, корпус вертикально',v:''},
+{n:'Болгарские выпады',m:'Ноги',d:'Мощная нагрузка на одну ногу и ягодицу',t:'Задняя стопа на возвышении, вес на передней ноге',v:''},
+{n:'Румынская тяга',m:'Ноги',d:'Задняя поверхность бедра и ягодицы',t:'Наклон от таза с прямой спиной, снаряд скользит по ногам',v:''},
+{n:'Становая тяга',m:'Ноги',d:'Базовое упражнение на всё тело',t:'Спина нейтральна, гриф близко к ногам, подъём через таз',v:''},
+{n:'Сгибание ног лёжа',m:'Ноги',d:'Задняя поверхность бедра в тренажёре',t:'Плавное сгибание без рывков, пауза в верхней точке',v:''},
+{n:'Разгибание ног сидя',m:'Ноги',d:'Квадрицепс изолированно',t:'Полное разгибание с паузой, медленный возврат',v:''},
+{n:'Икры стоя',m:'Ноги',d:'Икроножные мышцы',t:'Подъём на носки до максимума, пауза сверху',v:''},
+{n:'Икры сидя',m:'Ноги',d:'Камбаловидная мышца под икрой',t:'Сидя, колени под валиком, полный диапазон',v:''},
+{n:'Ягодичный мост со штангой',m:'Ягодицы',d:'Ягодицы и бицепс бедра со снарядом',t:'Лопатки на скамье, таз вверх до прямой линии',v:''},
+{n:'Зашагивания на тумбу',m:'Ноги',d:'Ноги, ягодицы, баланс и кардио',t:'Шаг всей стопой на возвышение, подъём без толчка ногой с пола',v:''},
+{n:'Hip thrust',m:'Ягодицы',d:'Главное упражнение на ягодицы',t:'Лопатки на скамье, вес на бёдрах, таз вверх, подбородок к груди',v:''},
+{n:'Ягодичный мостик на полу',m:'Ягодицы',d:'Лёгкий вариант для разминки и новичков',t:'Пятки близко к тазу, сжимать ягодицы в верхней точке',v:''},
+{n:'Отведение ноги в кроссовере',m:'Ягодицы',d:'Большая ягодичная изолированно',t:'Нога уходит назад и чуть вверх без прогиба в пояснице',v:''},
+{n:'Разведение ног в тренажёре',m:'Ягодицы',d:'Средняя ягодичная, форма бёдер',t:'Колени в стороны до комфортного предела, спина прижата',v:''},
+{n:'Отведение бедра лёжа',m:'Ягодицы',d:'Средняя ягодичная без оборудования',t:'Корпус в одной линии, нога под углом 45°, медленно',v:''},
+{n:'Fire hydrant',m:'Ягодицы',d:'Ягодицы и кор на четвереньках',t:'Колено в сторону без поворота таза',v:''},
+{n:'Стульчик у стены',m:'Ягодицы',d:'Статика на ноги и ягодицы',t:'Спина прижата к стене, бёдра параллельны полу',v:''},
+{n:'Обратная гиперэкстензия',m:'Ягодицы',d:'Ягодицы и разгибатели спины',t:'Подъём ног за счёт ягодиц, без раскачки',v:''},
+{n:'Подтягивания',m:'Спина',d:'Широчайшие мышцы, руки, хват',t:'Лопатки вниз и назад, подбородок выше перекладины',v:''},
+{n:'Тяга верхнего блока',m:'Спина',d:'Широчайшие для тех, кому тяжело подтягиваться',t:'Грудь вперёд, тянуть лопатками, не раскачиваясь',v:''},
+{n:'Тяга штанги в наклоне',m:'Спина',d:'Толщина спины: всё в одном движении',t:'Наклон 45°, спина прямая, гриф к низу живота',v:''},
+{n:'Тяга гантели одной рукой',m:'Спина',d:'Широчайшие поочерёдно, коррекция асимметрий',t:'Опора на скамью, тянуть локтем вдоль корпуса',v:''},
+{n:'Тяга горизонтального блока',m:'Спина',d:'Средняя часть спины, осанка',t:'Лопатки сводятся, корпус почти неподвижен',v:''},
+{n:'Тяга Т-грифа',m:'Спина',d:'Мощная база на середину спины',t:'Стопы в упоре, спина нейтральна, тянуть к груди',v:''},
+{n:'Шраги с гантелями',m:'Спина',d:'Трапеции',t:'Плечи строго вверх, без вращения',v:''},
+{n:'Гиперэкстензия',m:'Спина',d:'Разгибатели спины и ягодицы',t:'Движение в тазобедренном суставе, без переразгибания',v:''},
+{n:'Пуловер с гантелью',m:'Спина',d:'Широчайшие и грудь, растяжение',t:'Гантель за голову, локти чуть согнуты, плавно',v:''},
+{n:'Рычажная тяга',m:'Спина',d:'Спина в тренажёре с чёткой траекторией',t:'Грудь к упору, тянуть локтями назад',v:''},
+{n:'Face pull',m:'Спина',d:'Задние дельты и здоровье плеч',t:'Трос к лицу, локти в стороны, лопатки сходятся',v:''},
+{n:'Супермен',m:'Спина',d:'Низ спины без оборудования',t:'Лёжа на животе поднимать руки и ноги, шея нейтральна',v:''},
+{n:'Жим штанги лёжа',m:'Грудь',d:'Классика для грудных и силы верха',t:'Лопатки сведены, гриф к низу груди, стопы в упоре',v:''},
+{n:'Жим гантелей лёжа',m:'Грудь',d:'Грудные с большей амплитудой',t:'Гантели до уровня груди, без стука',v:''},
+{n:'Жим на наклонной',m:'Грудь',d:'Верх груди',t:'Скамья 30–45°, гриф к ключицам',v:''},
+{n:'Жим в тренажёре',m:'Грудь',d:'Грудь с безопасной траекторией',t:'Ручки на уровне груди, локти под 90°',v:''},
+{n:'Разведение гантелей лёжа',m:'Грудь',d:'Растяжение и форма грудных',t:'Локти чуть согнуты, разводить до приятного натяжения',v:''},
+{n:'Отжимания от пола',m:'Грудь',d:'Грудь, трицепс, кор без оборудования',t:'Корпус в линии, локти под 45° к корпусу',v:''},
+{n:'Отжимания на брусьях',m:'Грудь',d:'Низ груди и трицепс',t:'Корпус чуть вперёд, локти не разваливаются',v:''},
+{n:'Отжимания от скамьи',m:'Грудь',d:'Лёгкий вариант отжиманий',t:'Чем ниже опора, тем сложнее',v:''},
+{n:'Сведение в кроссовере',m:'Грудь',d:'Финальная изоляция грудных',t:'Дуга вниз-внутрь, пауза при сведении рук',v:''},
+{n:'Жим гантелей сидя',m:'Плечи',d:'Передние и средние дельты',t:'Гантели над плечами, без прогиба поясницы',v:''},
+{n:'Жим штанги стоя',m:'Плечи',d:'Армейский жим: всё плечевое',t:'Штанга над головой, корпус не отклоняется назад',v:''},
+{n:'Махи в стороны',m:'Плечи',d:'Средние дельты — ширина плеч',t:'Локти ведут движение, подъём до уровня плеч',v:''},
+{n:'Махи вперёд',m:'Плечи',d:'Передние дельты',t:'Подъём до уровня глаз, малые веса',v:''},
+{n:'Махи в наклоне',m:'Плечи',d:'Задние дельты',t:'Корпус параллелен полу, мизинцы чуть выше больших пальцев',v:''},
+{n:'Тяга к подбородку',m:'Плечи',d:'Трапеции и средние дельты',t:'Локти выше кистей, до уровня груди',v:''},
+{n:'Задняя дельта в тренажёре',m:'Плечи',d:'Изоляция задних дельт',t:'Разводить ручки в стороны, лопатки к позвоночнику',v:''},
+{n:'Подъём штанги на бицепс',m:'Руки',d:'Масса бицепса',t:'Локти прижаты, без раскачки корпусом',v:''},
+{n:'Молотковые сгибания',m:'Руки',d:'Бицепс и предплечье',t:'Нейтральный хват, движение как с молотком',v:''},
+{n:'Сгибания сидя на бицепс',m:'Руки',d:'Бицепс с упором для чистоты техники',t:'Спина к спинке, локти неподвижны',v:''},
+{n:'Скамья Скотта',m:'Руки',d:'Изоляция бицепса без читинга',t:'Полное разгибание внизу',v:''},
+{n:'Французский жим',m:'Руки',d:'Длинная головка трицепса',t:'Локти смотрят вверх и не разъезжаются',v:''},
+{n:'Разгибания на блоке',m:'Руки',d:'Трицепс изолированно',t:'Локти у корпуса, полное выпрямление',v:''},
+{n:'Разгибания из-за головы',m:'Руки',d:'Трицепс с растяжением',t:'Локти близко к голове, снаряд опускается за голову',v:''},
+{n:'Отжимания узким хватом',m:'Руки',d:'Трицепс и внутренняя часть груди',t:'Кисти под плечами, локти вдоль корпуса',v:''},
+{n:'Жим узким хватом',m:'Руки',d:'Трицепс и грудь базово',t:'Хват на ширине плеч, гриф к низу груди',v:''},
+{n:'Концентрированные сгибания',m:'Руки',d:'Пик бицепса',t:'Опора локтя в бедро, медленный возврат',v:''},
+{n:'Скручивания',m:'Пресс',d:'Прямая мышца живота',t:'Отрывать лопатки, поясница прижата к полу',v:''},
+{n:'Подъём ног в висе',m:'Пресс',d:'Низ пресса',t:'Без раскачки, колени можно согнуть',v:''},
+{n:'Подъём корпуса на наклонной',m:'Пресс',d:'Пресс с весом собственного тела',t:'Скруглять спину, не тянуть шею руками',v:''},
+{n:'Планка',m:'Кор',d:'Статика для всего кора',t:'Таз подкручен, живот втянут, дыхание ровное',v:''},
+{n:'Боковая планка',m:'Кор',d:'Косые мышцы и стабилизация',t:'Тело в прямой линии, таз не проваливается',v:''},
+{n:'Русские скручивания',m:'Кор',d:'Косые мышцы живота',t:'Поворот за счёт корпуса, не только рук',v:''},
+{n:'Велосипед',m:'Кор',d:'Пресс и косые в динамике',t:'Локоть к противоположному колену, средний темп',v:''},
+{n:'Дровосек в кроссовере',m:'Кор',d:'Косые мышцы с весом',t:'Диагональное движение, взгляд за руками',v:''},
+{n:'Ролик для пресса',m:'Кор',d:'Продвинутый кор',t:'Спина без провисания, катиться в меру возможностей',v:''},
+{n:'Мёртвый жук',m:'Кор',d:'Безопасный кор, подходит всем',t:'Поясница прижата к полу всё время',v:''},
+{n:'Альпинист',m:'Кор',d:'Кор плюс кардио',t:'Таз не подпрыгивает, темп быстрый',v:''},
+{n:'Планка с касанием плеч',m:'Кор',d:'Кор и стабилизация плеч',t:'Таз не гуляет, касание медленное',v:''},
+{n:'Бег на дорожке',m:'Кардио',d:'Выносливость и жиросжигание',t:'Начинать с быстрой ходьбы 5 минут',v:''},
+{n:'Гребной тренажёр',m:'Кардио',d:'Кардио плюс спина и ноги',t:'Сначала толчок ногами, затем тяга руками',v:''},
+{n:'Велотренажёр',m:'Кардио',d:'Мягкое кардио для суставов',t:'Седло на уровне таза, темп 80–90 оборотов',v:''},
+{n:'Эллипс',m:'Кардио',d:'Кардио без ударной нагрузки',t:'Работать всей стопой, держать осанку',v:''},
+{n:'Скакалка',m:'Кардио',d:'Быстрое кардио и координация',t:'Крутить запястьями, прыгать невысоко',v:''},
+{n:'Бёрпи',m:'Кардио',d:'Максимальный пульс за минимум времени',t:'Присед — упор лёжа — отжимание — прыжок',v:''},
+{n:'Джампинг джек',m:'Кардио',d:'Разогрев и лёгкое кардио',t:'Приземляться мягко на носки',v:''},
+{n:'Степпер',m:'Кардио',d:'Ноги и выносливость',t:'Шаг полный, не опираться на поручни',v:''},
+{n:'Суставная разминка',m:'Разминка',d:'Подготовка суставов к нагрузке',t:'Круговые движения сверху вниз, 5 минут',v:''},
+{n:'Вращения руками',m:'Разминка',d:'Разогрев плеч',t:'Вперёд и назад, амплитуда постепенно растёт',v:''},
+{n:'Наклоны корпуса',m:'Разминка',d:'Разогрев спины',t:'Плавно, без рывков',v:''},
+{n:'Махи ногами',m:'Разминка',d:'Разогрев бёдер',t:'У опоры, амплитуда по самочувствию',v:''},
+{n:'Вращения тазом',m:'Разминка',d:'Подвижность тазобедренных суставов',t:'Круги в обе стороны',v:''},
+{n:'Кошка-корова',m:'Разминка',d:'Мобильность позвоночника',t:'Медленно, дышать в такт движению',v:''},
+{n:'Полуприседы',m:'Разминка',d:'Разогрев ног',t:'Лёгкий темп, полная стопа',v:''},
+{n:'Вращения кистями и стопами',m:'Разминка',d:'Мелкие суставы',t:'По 10 кругов в каждую сторону',v:''},
+{n:'Наклон к ногам сидя',m:'Растяжка',d:'Задняя поверхность бедра',t:'Тянуться животом к бёдрам, без резких рывков',v:''},
+{n:'Растяжка квадрицепса стоя',m:'Растяжка',d:'Передняя поверхность бедра',t:'Колено назад, таз вперёд, держаться за опору',v:''},
+{n:'Поза ребёнка',m:'Растяжка',d:'Спина и расслабление',t:'Таз на пятки, руки вперёд, дышать глубоко',v:''},
+{n:'Поза голубя',m:'Растяжка',d:'Ягодицы и тазобедренные суставы',t:'Бедро вперёд, корпус прямой, держать 30–60 секунд',v:''},
+{n:'Растяжка груди у рамы',m:'Растяжка',d:'Грудные и плечи',t:'Предплечье на раме, корпус отводить вперёд',v:''},
+{n:'Растяжка икр у стены',m:'Растяжка',d:'Икры и ахиллово сухожилие',t:'Пятка прижата, колено прямое',v:''},
+{n:'Скручивание лёжа',m:'Растяжка',d:'Позвоночник после тренировки',t:'Колени в сторону, плечи на полу',v:''},
+{n:'Собака мордой вниз',m:'Растяжка',d:'Вся задняя цепь',t:'Таз вверх, пятки тянутся к полу',v:''},
+{n:'Сотня',m:'Пилатес',d:'Классика пилатеса: кор и дыхание',t:'Руки пульсируют в ритме дыхания, счёт до 100',v:''},
+{n:'Roll-up',m:'Пилатес',d:'Позвоночник и пресс',t:'Скругляться позвонок за позвонком',v:''},
+{n:'Одиночная растяжка ноги',m:'Пилатес',d:'Кор и координация',t:'Поясница прижата, нога меняется плавно',v:''},
+{n:'Крисс-кросс',m:'Пилатес',d:'Косые мышцы живота',t:'Локоть к противоположному колену, таз неподвижен',v:''},
+{n:'Плавание',m:'Пилатес',d:'Спина и ягодицы в статике',t:'Руки и ноги отрываются от пола, таз стабилен',v:''},
+{n:'Боковые махи',m:'Пилатес',d:'Ягодицы и косые мышцы',t:'Корпус в прямой линии, нога движется от бедра',v:''},
+{n:'Мост пилатес',m:'Пилатес',d:'Ягодицы и подвижность позвоночника',t:'Позвонок за позвонком вверх и вниз',v:''}
+];
 var KEY='fitquest_v3';
-function demo(){return{auth:false,theme:'auto',invite:'FIT-7K2Q',tariffs:[{n:'Индивидуальная',p:2500},{n:'Онлайн',p:1800},{n:'Пилатес группа',p:1900}],
+function demo(){return{auth:false,theme:'auto',invite:'FIT-7K2Q',
 clients:[
-{id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',emoji:'🐰',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,disc:10,lastActive:2,sub:{left:6,total:12,frozen:false},notes:'Любит утренние тренировки',tags:['пилатес','спина'],quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Готова к отчёту за завтра!'}],report:{quest:'Пилатес и укрепление спины',date:'сегодня',text:'Выполнила всю программу, спина не болит'}},
-{id:'c2',name:'Иван Петров',login:'ivan',pass:'1234',emoji:'🐻',c:'#3b82f6',xp:150,streak:0,blockDay:2,blockLen:21,disc:0,lastActive:7,sub:{left:2,total:8,frozen:false},notes:'Нужно вернуть к тренировкам',tags:['новичок'],quests:[{n:'Блок «База: всё тело»',d:2,t:21}],measures:[{d:'20.10',w:84.0},{d:'27.10',w:83.2}],chat:[],report:null}],
-sessions:[{id:'s1',date:0,time:'10:00',title:'Пилатес (группа)',price:1900,type:'group',who:['c1'],paid:['c1']},{id:'s2',date:0,time:'18:30',title:'Индивидуальная',price:2500,type:'indiv',who:['c2'],paid:[]},{id:'s3',date:1,time:'09:00',title:'Онлайн',price:1800,type:'online',who:['c1'],paid:[]}],
+{id:'c1',name:'Анна Смирнова',login:'anna',pass:'1234',emoji:'🐰',c:'#f59e0b',xp:420,streak:5,blockDay:5,blockLen:21,disc:10,lastActive:2,notes:'Любит утренние тренировки',tags:['пилатес','спина'],quests:[{n:'Блок «Спина и осанка»',d:5,t:21},{n:'Привычка: 8000 шагов',d:12,t:30}],measures:[{d:'01.10',w:62.5},{d:'08.10',w:62.1},{d:'15.10',w:61.4},{d:'22.10',w:60.9},{d:'29.10',w:60.2}],chat:[{who:'them',t:'Готова к отчёту за завтра!'}],report:{quest:'Пилатес и укрепление спины',date:'сегодня',text:'Выполнила всю программу, спина не болит'}},
+{id:'c2',name:'Иван Петров',login:'ivan',pass:'1234',emoji:'🐻',c:'#3b82f6',xp:150,streak:0,blockDay:2,blockLen:21,disc:0,lastActive:7,notes:'Нужно вернуть к тренировкам',tags:['новичок'],quests:[{n:'Блок «База: всё тело»',d:2,t:21}],measures:[{d:'20.10',w:84.0},{d:'27.10',w:83.2}],chat:[],report:null}],
+sessions:[{id:'s1',date:0,time:'10:00',title:'Пилатес (группа)',type:'group',ex:'Суставная разминка\nСотня\nМост пилатес\nПоза ребёнка',who:['c1'],done:['c1']},{id:'s2',date:0,time:'18:30',title:'Индивидуальная',type:'indiv',ex:'Суставная разминка\nПриседания без веса\nОтжимания от пола\nПланка\nСкручивания\nПоза ребёнка',who:['c2'],done:[]},{id:'s3',date:1,time:'09:00',title:'Онлайн',type:'online',ex:'',who:['c1'],done:[]}],
 rewards:[{n:'Скидка 10% на месяц',cost:300},{n:'Гостевой визит для друга',cost:500},{n:'Фитнес-марафон бесплатно',cost:1000}],purchases:[]};}
 function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return demo();}
 var S=load();
+function ensureEx(){if(!S.exlib||!S.exlib.length)S.exlib=EXLIB.slice();}
+ensureEx();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2200);}
 function today0(){var d=new Date();d.setHours(0,0,0,0);return d;}
 function fmt(d){return d.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];}
-function monthName(i){return ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'][i];}
 var VIEW='dash',TABS={dash:'🏠|Дашборд',clients:'👥|Клиенты',schedule:'📅|Расписание',checks:'✅|Проверки',shop:'🎁|Лавка',settings:'⚙️|Настройки'};
 function clientById(id){for(var i=0;i<S.clients.length;i++)if(S.clients[i].id===id)return S.clients[i];return null;}
 function ring(pct){pct=Math.max(0,Math.min(100,pct));var r=16,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 40 40"><defs><linearGradient id="grad"><stop offset="0%" stop-color="#5b5bf0"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs><circle class="bg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4"/><circle class="fg" cx="20" cy="20" r="'+r+'" fill="none" stroke-width="4" stroke-dasharray="'+c+'" stroke-dashoffset="'+(c-c*pct/100)+'" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">'+pct+'%</text></svg>';}
@@ -133,7 +236,6 @@ risk.forEach(function(c){h+='<div class="row" style="justify-content:space-betwe
 h+='</div><div class="card" style="grid-column:1/-1"><b>Топ по XP</b>';
 top.forEach(function(c,i){h+='<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>'+(i+1)+'. '+c.emoji+' '+esc(c.name)+'</span><b>'+c.xp+' XP</b></div>';});
 return h+'</div></div>';}
-function fmtMoney(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽';}
 function rClients(){var h='<h1 class="title">Клиенты</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addclient">＋ Добавить клиента</button></div><div class="list">';
 S.clients.forEach(function(c){var pct=Math.round(c.blockDay/c.blockLen*100);
 h+='<div class="item" data-act="client" data-id="'+c.id+'"><div class="av" style="background:'+c.c+'">'+c.emoji+'</div><div style="flex:1;min-width:0"><b>'+esc(c.name)+'</b><div style="font-size:12.5px;color:var(--tx2)">Ур.'+Math.floor(c.xp/100+1)+' · '+c.xp+' XP · серия '+c.streak+' 🔥</div></div><div class="row" style="gap:8px">'+(c.lastActive>=7?'<span class="pill red">риск</span>':'')+ring(pct)+'</div></div>';});
@@ -146,18 +248,47 @@ if(t==='meas'){h+='<canvas class="chart" id="wchart"></canvas><div class="row" s
 if(t==='chat'){h+='<div style="max-height:300px;overflow:auto" id="chatbox">';(c.chat||[]).forEach(function(m){h+='<div class="msg '+(m.who==='me'?'me':'them')+'">'+esc(m.t)+'</div>';});if(!(c.chat||[]).length)h+='<div class="empty">Сообщений пока нет</div>';h+='</div><div class="row" style="margin-top:10px"><input class="inp" id="cmsg" placeholder="Сообщение…" style="flex:1" onkeydown="if(event.key===&apos;Enter&apos;)sendMsg()"><button class="btn sm" data-act="sendmsg">➤</button></div>';}
 modal(h);if(t==='meas')drawChart(c);}
 function drawChart(c){var cv=document.getElementById('wchart');if(!cv)return;var d=c.measures;if(d.length<2){var g=cv.getContext('2d');g.font='13px sans-serif';g.fillStyle=getComputedStyle(document.body).getPropertyValue('--tx2');g.fillText('Добавьте минимум 2 замера',10,60);return;}
-var ws=d.map(function(m){return m.w;});var mn=Math.min.apply(null,ws)-1,mx=Math.max.apply(null,ws)+1;var g=cv.getContext('2d'),W=cv.width=cv.offsetWidth*2,H=cv.height=240;g.scale(1,1);g.clearRect(0,0,W,H);var pts=d.map(function(m,i){return [40+i*(W-60)/(d.length-1),H-30-(m.w-mn)/(mx-mn)*(H-60)];});
+var ws=d.map(function(m){return m.w;});var mn=Math.min.apply(null,ws)-1,mx=Math.max.apply(null,ws)+1;var g=cv.getContext('2d'),W=cv.width=cv.offsetWidth*2,H=cv.height=240;g.clearRect(0,0,W,H);var pts=d.map(function(m,i){return [40+i*(W-60)/(d.length-1),H-30-(m.w-mn)/(mx-mn)*(H-60)];});
 g.strokeStyle='#5b5bf0';g.lineWidth=5;g.lineJoin='round';g.beginPath();pts.forEach(function(p,i){i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]);});g.stroke();
 pts.forEach(function(p){g.beginPath();g.arc(p[0],p[1],7,0,7);g.fillStyle='#8b5cf6';g.fill();});}
 function sendMsg(){var c=clientById(window._cid),el=document.getElementById('cmsg');if(!c||!el.value.trim())return;c.chat=(c.chat||[]);c.chat.push({who:'me',t:el.value.trim()});el.value='';save();clientTab('chat');var b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;}
-function rSchedule(){var h='<h1 class="title">Расписание</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addsess">＋ Занятие</button></div><div class="list">';
+function exlibUse(){return S.exlib&&S.exlib.length?S.exlib:EXLIB;}
+function vid(u){if(!u)return '';var s=String(u);var m=s.match(/[?&]v=([\w-]{6,})/)||s.match(/youtu\.be\/([\w-]{6,})/);return m?'https://www.youtube.com/embed/'+m[1]:'';}
+function libList(){var q=(window._lq||'').toLowerCase(),L=exlibUse(),h='';
+L.forEach(function(x,i){if(q&&x.n.toLowerCase().indexOf(q)<0&&x.m.toLowerCase().indexOf(q)<0)return;h+='<div class="item" style="box-shadow:none" data-act="exinfo" data-i="'+i+'"><div style="flex:1;min-width:0"><b>'+esc(x.n)+'</b><div style="font-size:12px;color:var(--tx2)">'+esc(x.m)+'</div></div>'+(x.v?'<span class="pill blue">🎬 видео</span>':'')+'</div>';});
+return h||'<div class="empty">Ничего не нашлось</div>';}
+function openLib(){ensureEx();window._lq=window._lq||'';window._libOpen=true;var old=document.getElementById('libov');if(old)old.remove();var d=document.createElement('div');d.className='modal open';d.id='libov';d.style.zIndex='120';d.setAttribute('data-act','libclose');d.innerHTML='<div class="mcard"><div class="row" style="justify-content:space-between"><b style="font-size:17px">Библиотека упражнений</b><button class="btn ghost sm" data-act="libclose">✕</button></div><div class="row" style="margin:10px 0"><input class="inp" id="lq" placeholder="Поиск: название или группа…" value="'+esc(window._lq)+'" oninput="libSearch()" style="flex:1"><button class="btn sm" data-act="exnew">＋ Своё</button></div><div id="lbox">'+libList()+'</div><div class="row" style="margin-top:12px"><button class="btn" data-act="libclose">Готово</button></div></div>';document.body.appendChild(d);}
+function libSearch(){window._lq=document.getElementById('lq').value;document.getElementById('lbox').innerHTML=libList();}
+function mset(h){if(window._libOpen){var m=document.querySelector('#libov .mcard');if(m){m.innerHTML=h;return;}}modal(h);}
+function exInfo(i){window._ei=i;var x=exlibUse()[i];if(!x)return;var vh=vid(x.v);
+var h='<div class="row" style="justify-content:space-between"><b style="font-size:17px">'+esc(x.n)+'</b><button class="btn ghost sm" data-act="'+(window._libOpen?'libback':'closemodal2')+'">✕</button></div>'
++'<span class="pill blue" style="margin-top:6px">'+esc(x.m)+'</span>'
++(vh?'<div style="margin:12px 0;border-radius:14px;overflow:hidden;aspect-ratio:16/9"><iframe width="100%" height="100%" src="'+vh+'" frameborder="0" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>':'')
++'<label class="fl">Что даёт</label><p style="font-size:14px">'+esc(x.d)+'</p>'
++'<label class="fl">Техника</label><p style="font-size:14px">'+esc(x.t)+'</p>'
++'<div class="row" style="margin-top:14px">'+(window._libFrom?'<button class="btn sm" data-act="exadd">➕ В комплекс</button>':'')+'<button class="btn ghost sm" data-act="exedit">✎ Редактировать</button>'+(window._libOpen?'<button class="btn ghost sm" data-act="libback">← Назад</button>':'')+'<button class="btn sm danger" data-act="exdel">🗑</button></div>';
+mset(h);}
+function exForm(){var isNew=window._ei<0;var x=isNew?{n:'',m:'',d:'',t:'',v:''}:exlibUse()[window._ei];if(!x)return;
+mset('<b style="font-size:17px">'+(isNew?'Новое упражнение':'Редактирование')+'</b>'
++'<label class="fl">Название</label><input class="inp" id="en" value="'+esc(x.n)+'" placeholder="Например: Тяга к поясу">'
++'<label class="fl">Группа мышц</label><input class="inp" id="em" value="'+esc(x.m||'')+'" placeholder="Ноги, Спина, Пресс…">'
++'<label class="fl">Что даёт</label><textarea class="inp" id="ed" style="min-height:60px">'+esc(x.d||'')+'</textarea>'
++'<label class="fl">Техника выполнения</label><textarea class="inp" id="et" style="min-height:60px">'+esc(x.t||'')+'</textarea>'
++'<label class="fl">Ссылка на видео (YouTube)</label><input class="inp" id="ev" value="'+esc(x.v||'')+'" placeholder="https://youtu.be/…">'
++'<div class="row" style="margin-top:14px"><button class="btn" data-act="exsave">Сохранить</button><button class="btn ghost sm" data-act="libback">← Назад</button></div>');}
+function rSchedule(){var h='<h1 class="title">Расписание</h1><div class="row" style="margin-bottom:14px"><button class="btn" data-act="addsess">＋ Занятие</button><button class="btn ghost" data-act="lib" data-f="">📚 Библиотека</button></div><div class="list">';
 var days={};S.sessions.forEach(function(s){(days[s.date]=days[s.date]||[]).push(s);});
 var keys=Object.keys(days).map(Number).sort(function(a,b){return a-b;});
 keys.forEach(function(off){var d=new Date(today0());d.setDate(d.getDate()+off);
 h+='<h2 class="sec">'+(off===0?'Сегодня':off===1?'Завтра':fmt(d))+'</h2>';
 days[off].forEach(function(s){h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(s.title)+'</b><span class="pill blue">'+s.time+'</span></div><div style="font-size:13px;color:var(--tx2);margin:6px 0">'+(s.type==='group'?'групповое':s.type==='indiv'?'индивидуальное':'онлайн')+'</div>';
-s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;h+='<div class="row" style="justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><span>'+cc.emoji+' '+esc(cc.name)+'</span></div>';});
-h+='<button class="btn ghost sm" style="margin-top:8px" data-act="delsess" data-id="'+s.id+'">Удалить</button></div>';});});
+if(s.ex){var lines=s.ex.split('\n').filter(function(x){return x.trim();});var L=exlibUse();
+h+='<div class="card" style="box-shadow:none;margin:8px 0;font-size:13.5px;color:var(--tx2)">'+lines.map(function(ln){var name=ln.split('—')[0].split('–')[0].trim();var idx=-1;for(var j=0;j<L.length;j++)if(L[j].n===name){idx=j;break;}
+if(idx>=0)return '<span style="cursor:pointer;text-decoration:underline dotted" data-act="exinfo2" data-n="'+esc(name)+'">'+esc(ln)+'</span>';return esc(ln);}).join('<br>')+'</div>';}
+h+='<div style="margin-top:6px">';
+s.who.forEach(function(cid){var cc=clientById(cid);if(!cc)return;var isDone=(s.done||[]).indexOf(cid)>=0;
+h+='<div class="row" style="justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><span>'+cc.emoji+' '+esc(cc.name)+'</span><div class="row">'+(isDone?'<span class="pill green">проведено ✓</span>':'')+'<button class="tgl '+(isDone?'on':'')+'" data-act="assigntgl" data-s="'+s.id+'" data-c="'+cid+'"></button></div></div>';});
+h+='</div><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="assign" data-id="'+s.id+'">＋ Назначить клиента</button><button class="btn ghost sm" data-act="editex" data-id="'+s.id+'">✎ Комплекс</button><button class="btn ghost sm" data-act="delsess" data-id="'+s.id+'">Удалить</button></div></div>';});});
 return h+'</div>';}
 function rChecks(){var h='<h1 class="title">Проверки</h1><div class="list">';var n=0;
 S.clients.forEach(function(c){if(!c.report)return;n++;h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+c.emoji+' '+esc(c.name)+'</b><span class="pill gray">'+esc(c.report.date)+'</span></div><div style="margin:8px 0;font-size:14px"><span class="pill blue">'+esc(c.report.quest)+'</span></div><p style="font-size:14px;color:var(--tx2)">'+esc(c.report.text)+'</p><div class="row" style="margin-top:12px"><button class="btn sm" data-act="approve" data-id="'+c.id+'">✔ Засчитать (+50 XP)</button><button class="btn sm danger" data-act="reject" data-id="'+c.id+'">Отклонить</button></div></div>';});
@@ -169,13 +300,14 @@ if(!S.rewards.length)h+='<div class="empty">Добавьте первые наг
 if(S.purchases.length){h+='<h2 class="sec">Заявки на покупку</h2>';
 S.purchases.forEach(function(p,i){var c=clientById(p.cid);h+='<div class="card"><div class="row" style="justify-content:space-between"><span>'+esc(c?c.name:'')+' → <b>'+esc(p.n)+'</b></span><button class="btn sm" data-act="okpurchase" data-i="'+i+'">Выдать</button></div></div>';});}
 return h+'</div>';}
-function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:15px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
+function rSettings(){var h='<h1 class="title">Настройки</h1><div class="card"><b>Код приглашения</b><div class="row" style="margin-top:10px"><span class="pill blue" style="font-size:15px">'+S.invite+'</span><button class="btn ghost sm" data-act="copycode">Скопировать</button></div><p style="font-size:13px;color:var(--tx2);margin-top:10px">Клиент вводит этот код при регистрации в приложении.</p></div><div class="card" style="margin-top:14px"><b>Тема оформления</b><div class="tabbar">'+[['light','Светлая'],['dark','Тёмная'],['auto','Авто']].map(function(x){return '<button class="'+(S.theme===x[0]?'on':'')+'" data-act="theme2" data-t="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div><div class="card" style="margin-top:14px"><b>Библиотека упражнений</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Упражнений в базе: '+exlibUse().length+'. Каждое можно отредактировать или удалить в самой библиотеке.</p><div class="row"><button class="btn danger sm" data-act="resetexlib">Вернуть стандартные 104</button></div></div><div class="card" style="margin-top:14px"><b>Данные</b><p style="font-size:13px;color:var(--tx2);margin:8px 0">Всё хранится в этом браузере (демо-режим).</p><div class="row"><button class="btn danger sm" data-act="resetdemo">Сбросить демо-данные</button></div></div>';
 return h;}
 document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var act=el.getAttribute('data-act');
 if(act==='nav')go(el.getAttribute('data-v'));
 else if(act==='theme')setTheme();
 else if(act==='theme2'){S.theme=el.getAttribute('data-t');save();applyTheme();render();}
 else if(act==='closemodal2')closeModal();else if(act==='closemodal'&&e.target.id==='modal')closeModal();
+else if(act==='libclose'){var ov=document.getElementById('libov');if(ov&&(e.target.id==='libov'||e.target.closest('button'))){ov.remove();window._libOpen=false;}}
 else if(act==='client')openClient(el.getAttribute('data-id'));
 else if(act==='ctab')clientTab(el.getAttribute('data-t'));
 else if(act==='cnotesSave'){var c=clientById(window._cid);c.notes=document.getElementById('cnotes').textContent;c.tags=document.getElementById('ctags').value.split(',').map(function(s){return s.trim();}).filter(Boolean);save();toast('Сохранено ✅');}
@@ -184,17 +316,32 @@ else if(act==='addquest'){var n=prompt('Название квеста:');if(!n)r
 else if(act==='delquest'){var c4=clientById(window._cid);c4.quests.splice(+el.getAttribute('data-i'),1);save();clientTab('quests');}
 else if(act==='addmeas'){var c5=clientById(window._cid),w=parseFloat(document.getElementById('mw').value);if(!w)return;var d=new Date();c5.measures.push({d:d.getDate()+'.'+(d.getMonth()+1),w:w});save();clientTab('meas');toast('Замер добавлен');}
 else if(act==='sendmsg')sendMsg();
-else if(act==='addclient'){var n=prompt('Имя клиента:');if(!n)return;var id='c'+Date.now();S.clients.push({id:id,name:n,login:'user'+Math.floor(Math.random()*900+100),pass:'1234',emoji:'🙂',c:'#8b5cf6',xp:0,streak:0,blockDay:0,blockLen:21,disc:0,lastActive:0,sub:{left:0,total:8,frozen:false},notes:'',tags:[],quests:[],measures:[],chat:[],report:null});save();render();toast('Клиент создан');}
-else if(act==='addsess'){modal('<b style="font-size:17px">Новое занятие</b><label class="fl">Название</label><input class="inp" id="st" value="Индивидуальная"><label class="fl">Тариф</label><select class="inp" id="star">'+S.tariffs.map(function(t){return '<option value="'+t.p+'">'+esc(t.n)+' — '+fmtMoney(t.p)+'</option>';}).join('')+'</select><label class="fl">День (0 — сегодня)</label><input class="inp" id="sd" type="number" value="0"><div class="row" style="margin-top:14px"><button class="btn" data-act="savesess">Создать</button></div>');}
-else if(act==='savesess'){S.sessions.push({id:'s'+Date.now(),date:+document.getElementById('sd').value||0,time:'10:00',title:document.getElementById('st').value||'Занятие',price:+document.getElementById('star').value,type:'indiv',who:[],paid:[]});save();closeModal();render();toast('Занятие создано');}
+else if(act==='addclient'){var n=prompt('Имя клиента:');if(!n)return;var id='c'+Date.now();S.clients.push({id:id,name:n,login:'user'+Math.floor(Math.random()*900+100),pass:'1234',emoji:'🙂',c:'#8b5cf6',xp:0,streak:0,blockDay:0,blockLen:21,lastActive:0,notes:'',tags:[],quests:[],measures:[],chat:[],report:null});save();render();toast('Клиент создан');}
+else if(act==='addsess'){modal('<b style="font-size:17px">Новое занятие</b><label class="fl">Название</label><input class="inp" id="st" value="Тренировка"><label class="fl">Тип</label><select class="inp" id="sty"><option value="indiv">Индивидуальное</option><option value="group">Групповое</option><option value="online">Онлайн</option></select><label class="fl">Время</label><input class="inp" id="stm" value="10:00"><label class="fl">День (0 — сегодня)</label><input class="inp" id="sd" type="number" value="0"><label class="fl">Комплекс упражнений (каждое с новой строки)</label><textarea class="inp" id="sex" style="min-height:90px;resize:vertical" placeholder="Суставная разминка&#10;Приседания без веса&#10;Планка"></textarea><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="lib" data-f="new">📚 Выбрать из библиотеки</button></div><label class="fl">Назначить клиентам</label>'+S.clients.map(function(c){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px"><input type="checkbox" data-c="'+c.id+'"> '+c.emoji+' '+esc(c.name)+'</label>';}).join('')+'<div class="row" style="margin-top:14px"><button class="btn" data-act="savesess">Создать</button></div>');}
+else if(act==='savesess'){var who=[];document.querySelectorAll('#mcard input[data-c]').forEach(function(cb){if(cb.checked)who.push(cb.getAttribute('data-c'));});S.sessions.push({id:'s'+Date.now(),date:+document.getElementById('sd').value||0,time:document.getElementById('stm').value||'10:00',title:document.getElementById('st').value||'Занятие',type:document.getElementById('sty').value,ex:document.getElementById('sex').value,who:who,done:[]});save();closeModal();render();toast('Занятие создано');}
 else if(act==='delsess'){S.sessions=S.sessions.filter(function(x){return x.id!==el.getAttribute('data-id');});save();render();}
+else if(act==='assigntgl'){var s2=S.sessions.find(function(x){return x.id===el.getAttribute('data-s');});if(!s2)return;var cid2=el.getAttribute('data-c');s2.done=s2.done||[];s2.who=s2.who||[];if(s2.who.indexOf(cid2)<0)s2.who.push(cid2);var k=s2.done.indexOf(cid2);if(k>=0){s2.done.splice(k,1);toast('Проведение снято');}else{s2.done.push(cid2);toast('Тренировка проведена ✓');}save();render();}
+else if(act==='assign'){window._sid=el.getAttribute('data-id');var s3=S.sessions.find(function(x){return x.id===window._sid;});if(!s3)return;var list=S.clients.map(function(c){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px"><input type="checkbox" data-c="'+c.id+'" '+(s3.who.indexOf(c.id)>=0?'checked':'')+'> '+c.emoji+' '+esc(c.name)+'</label>';}).join('');modal('<b style="font-size:17px">Назначить клиентов</b><div style="margin-top:10px">'+(list||'<div class="empty">Сначала добавьте клиентов</div>')+'</div><div class="row" style="margin-top:14px"><button class="btn" data-act="saveassign">Сохранить</button></div>');}
+else if(act==='saveassign'){var s4=S.sessions.find(function(x){return x.id===window._sid;});if(!s4)return;s4.who=[];document.querySelectorAll('#mcard input[data-c]').forEach(function(cb){if(cb.checked)s4.who.push(cb.getAttribute('data-c'));});s4.done=(s4.done||[]).filter(function(cid){return s4.who.indexOf(cid)>=0;});save();closeModal();render();toast('Назначено');}
+else if(act==='editex'){window._sid=el.getAttribute('data-id');var s5=S.sessions.find(function(x){return x.id===window._sid;});if(!s5)return;modal('<b style="font-size:17px">Комплекс упражнений</b><label class="fl">Каждое упражнение с новой строки</label><textarea class="inp" id="sex2" style="min-height:140px;resize:vertical">'+esc(s5.ex||'')+'</textarea><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="lib" data-f="edit">📚 Выбрать из библиотеки</button></div><div class="row" style="margin-top:14px"><button class="btn" data-act="saveex">Сохранить</button></div>');}
+else if(act==='saveex'){var s6=S.sessions.find(function(x){return x.id===window._sid;});if(!s6)return;s6.ex=document.getElementById('sex2').value;save();closeModal();render();toast('Комплекс сохранён');}
+else if(act==='lib'){window._libFrom=el.getAttribute('data-f')||null;openLib();}
+else if(act==='libback')openLib();
+else if(act==='exinfo'){exInfo(+el.getAttribute('data-i'));}
+else if(act==='exinfo2'){window._libOpen=false;window._libFrom=null;var nm=el.getAttribute('data-n'),Lx=exlibUse(),fx=-1;for(var j2=0;j2<Lx.length;j2++)if(Lx[j2].n===nm){fx=j2;break;}if(fx>=0)exInfo(fx);else toast('Упражнение не найдено в библиотеке');}
+else if(act==='exadd'){var xa=exlibUse()[window._ei];if(!xa)return;var ta=window._libFrom==='edit'?document.getElementById('sex2'):document.getElementById('sex');if(!ta){toast('Откройте «✎ Комплекс» и добавляйте оттуда');return;}ta.value=(ta.value.trim()?ta.value.replace(/\s+$/,'')+'\n':'')+xa.n;toast('В комплекс: '+xa.n);}
+else if(act==='exedit'){exForm();}
+else if(act==='exnew'){window._ei=-1;exForm();}
+else if(act==='exsave'){var nn=document.getElementById('en').value.trim();if(!nn)return;var obj={n:nn,m:document.getElementById('em').value.trim()||'Другое',d:document.getElementById('ed').value.trim(),t:document.getElementById('et').value.trim(),v:document.getElementById('ev').value.trim()};if(window._ei<0){S.exlib.push(obj);save();exInfo(S.exlib.length-1);}else{S.exlib[window._ei]=obj;save();exInfo(window._ei);}toast('Упражнение сохранено');}
+else if(act==='exdel'){if(!confirm('Удалить упражнение из библиотеки?'))return;S.exlib.splice(window._ei,1);save();openLib();toast('Упражнение удалено');}
+else if(act==='resetexlib'){S.exlib=EXLIB.slice();save();render();toast('Библиотека восстановлена');}
 else if(act==='approve'){var c6=clientById(el.getAttribute('data-id'));c6.xp+=50;c6.streak++;c6.lastActive=0;c6.report=null;save();render();toast('Засчитано! +50 XP для '+c6.name.split(' ')[0]);}
 else if(act==='reject'){var c7=clientById(el.getAttribute('data-id'));c7.report=null;save();render();toast('Отчёт отклонён');}
 else if(act==='addreward'){var n2=prompt('Название награды:');if(!n2)return;var c8=prompt('Цена в XP:');S.rewards.push({n:n2,cost:+c8||100});save();render();}
 else if(act==='delreward'){S.rewards.splice(+el.getAttribute('data-i'),1);save();render();}
 else if(act==='okpurchase'){S.purchases.splice(+el.getAttribute('data-i'),1);save();render();toast('Награда выдана 🎁');}
 else if(act==='copycode'){navigator.clipboard&&navigator.clipboard.writeText(S.invite);toast('Код скопирован');}
-else if(act==='resetdemo'){S=demo();S.auth=true;save();applyTheme();renderNav();render();toast('Демо-данные восстановлены');}});
+else if(act==='resetdemo'){S=demo();S.auth=true;ensureEx();save();applyTheme();renderNav();render();toast('Демо-данные восстановлены');}});
 function tryLogin(){var p=document.getElementById('pw');if(p.value==='1234'){S.auth=true;save();renderNav();render();document.getElementById('nav').style.display='flex';}else toast('Неверный пароль');}
 function boot(){applyTheme();
 if(S.auth){renderNav();render();return;}
